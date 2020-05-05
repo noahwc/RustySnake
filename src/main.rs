@@ -7,6 +7,7 @@ mod requests;
 mod responses;
 #[cfg(test)]
 mod test;
+mod graph;
 
 // External crates
 #[macro_use]
@@ -24,16 +25,20 @@ fn index() -> &'static str {
 #[post("/start", format = "json", data = "<req>")]
 fn start(req: Json<requests::Turn>) -> Json<responses::Start> {
     Json(responses::Start::new(
-        "#AA3E39".to_string(),
-        responses::HeadType::Pixel,
-        responses::TailType::Sharp,
+        "#CE3D16".to_string(),
+        responses::HeadType::Regular,
+        responses::TailType::Regular,
     ))
 }
 
 #[post("/move", format = "json", data = "<req>")]
 fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
-    let movement = responses::Move::new(responses::Movement::Right);
+    let movement = responses::Move::new(responses::Movement::Left);
     // Logic goes here
+    let (mut map, mut g) = graph::new(&(req.into_inner()));
+    //println!("{}", serde_json::to_string_pretty(&g).unwrap());
+    println!("{:?}", graph::Dot::new(&g));
+    // Return
     Json(movement)
 }
 

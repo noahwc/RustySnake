@@ -32,7 +32,7 @@ pub fn update_map(g: &mut UnGraph::<i32, i32>, map: &mut HashMap<Point, NodeInde
     for &p in points{
         map.insert(p, g.add_node(point_weight(&p)));
     }
-    for (p, i) in map {
+    for (p, i) in &*map {
         let adj = [
         Point{x: p.x - 1, y: p.y},
         Point{x: p.x + 1, y: p.y},

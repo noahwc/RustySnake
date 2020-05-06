@@ -1,7 +1,7 @@
 //  Uses
 use crate::{requests::{Turn, Point}, responses};
-use std::collections::HashMap;
-use petgraph::graph::{UnGraph, NodeIndex};
+pub use std::collections::HashMap;
+pub use petgraph::graph::{UnGraph, NodeIndex};
 
 
 pub fn direction(turn: &Turn) -> responses::Move {
@@ -29,19 +29,19 @@ pub fn all_points(turn: &Turn) -> Vec<Point> {
 
 // TODO: Write Unit Test, refactor in declarative code
 pub fn update_map(g: &mut UnGraph::<i32, i32>, map: &mut HashMap<Point, NodeIndex>, points: &Vec<Point>) {
-    for &p in points{
-        map.insert(p, g.add_node(point_weight(&p)));
+    for p in points{
+        map.insert(*p, g.add_node(point_weight(p)));
     }
     for (p, i) in &*map {
         let adj = [
         Point{x: p.x - 1, y: p.y},
         Point{x: p.x + 1, y: p.y},
         Point{x: p.x, y: p.y - 1},
-        Point{x: p.x, y: p.y + 1},
+        Point{x: p.x, y: p.y + 1}
         ]; 
         for n in &adj {
             match map.get(n) {
-                Some(adj_i) => g.update_edge(*i, *adj_i, edge_weight(&p, &n)),
+                Some(adj_i) => g.update_edge(*i, *adj_i, edge_weight(p, n)),
                 None => continue
             };
         }
@@ -60,3 +60,4 @@ fn edge_weight(p1: &Point, p2: &Point) -> i32 {
     // determine edge weight here
     return weight;
 }
+

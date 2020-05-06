@@ -5,9 +5,10 @@
 mod requests;
 #[allow(dead_code)]
 mod responses;
+#[allow(dead_code)]
+mod game;
 #[cfg(test)]
 mod test;
-mod graph;
 
 // External crates
 #[macro_use]
@@ -33,13 +34,7 @@ fn start(req: Json<requests::Turn>) -> Json<responses::Start> {
 
 #[post("/move", format = "json", data = "<req>")]
 fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
-    let movement = responses::Move::new(responses::Movement::Left);
-    // Logic goes here
-    let (mut map, mut g) = graph::new(&(req.into_inner()));
-    //println!("{}", serde_json::to_string_pretty(&g).unwrap());
-    println!("{:?}", graph::Dot::new(&g));
-    // Return
-    Json(movement)
+    Json(game::direction(&(req.into_inner())))
 }
 
 #[post("/end")]

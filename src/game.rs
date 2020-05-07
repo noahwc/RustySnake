@@ -52,7 +52,7 @@ impl Game {
         }
     }
 
-    pub fn update_point_weight(&mut self) {
+    pub fn update_point_weights(&mut self) {
         for (&point, &index) in &self.map {
             if self.turn.board.food.iter().any(|&food| point == food) {
                 match self.graph.node_weight_mut(index) {

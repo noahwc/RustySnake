@@ -5,6 +5,10 @@
 mod requests;
 #[allow(dead_code)]
 mod responses;
+#[allow(dead_code)]
+mod game;
+#[allow(dead_code)]
+mod movement;
 #[cfg(test)]
 mod test;
 
@@ -24,17 +28,15 @@ fn index() -> &'static str {
 #[post("/start", format = "json", data = "<req>")]
 fn start(req: Json<requests::Turn>) -> Json<responses::Start> {
     Json(responses::Start::new(
-        "#AA3E39".to_string(),
-        responses::HeadType::Pixel,
-        responses::TailType::Sharp,
+        "#CE3D16".to_string(),
+        responses::HeadType::Regular,
+        responses::TailType::Regular,
     ))
 }
 
 #[post("/move", format = "json", data = "<req>")]
 fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
-    let movement = responses::Move::new(responses::Movement::Right);
-    // Logic goes here
-    Json(movement)
+    Json(movement::get_move(req.into_inner()))
 }
 
 #[post("/end")]

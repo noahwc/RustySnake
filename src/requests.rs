@@ -1,38 +1,38 @@
 use serde::Deserialize;
 
-#[derive(Deserialize, PartialEq, Eq, Debug)]
+#[derive(Deserialize, PartialEq, Eq, Debug, Hash, Copy, Clone)]
 pub struct Point {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
 }
 
 #[derive(Deserialize, PartialEq, Eq, Debug)]
 pub struct Turn {
-    game: Game,
-    turn: u32,
-    board: Board,
-    you: Snake,
+    pub game: Game,
+    pub turn: u32,
+    pub board: Board,
+    pub you: Snake,
 }
 
 #[derive(Deserialize, PartialEq, Eq, Debug)]
 pub struct Game {
-    id: String,
+    pub id: String,
 }
 
 #[derive(Deserialize, PartialEq, Eq, Debug)]
 pub struct Board {
-    height: i32,
-    width: i32,
-    food: Vec<Point>,
-    snakes: Vec<Snake>,
+    pub height: i32,
+    pub width: i32,
+    pub food: Vec<Point>,
+    pub snakes: Vec<Snake>,
 }
 
 #[derive(Deserialize, PartialEq, Eq, Debug)]
 pub struct Snake {
-    id: String,
-    name: String,
-    health: i32,
-    body: Vec<Point>,
+    pub id: String,
+    pub name: String,
+    pub health: i32,
+    pub body: Vec<Point>,
 }
 
 #[cfg(test)]

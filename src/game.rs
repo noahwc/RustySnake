@@ -24,3 +24,20 @@ impl Game {
         }
     }
 }
+
+pub struct Node {
+    point: Point,
+    weight: i32,
+}
+impl Node {
+    pub fn new(p: Point, w: i32) -> Node {
+        Node {
+            point: p,
+            weight: w,
+        }
+    }
+
+    pub fn update_weight<F>(&mut self, heuristic: F) where F: Fn(Point) -> i32 {
+        self.weight = heuristic(self.point);
+    }
+}

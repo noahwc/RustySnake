@@ -17,8 +17,13 @@ impl Board {
         }
     }
     // methods
-    
+    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&mut Node){
+        for n in self.board.iter_mut().flat_map(|r| r.iter_mut()) {
+            heuristic(n);
+        }
+    }
 }
+
 
 // Helper
 pub fn new_board(t: &Turn) -> [[Node; 11]; 11] {

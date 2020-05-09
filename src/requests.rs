@@ -2,8 +2,8 @@ use serde::Deserialize;
 
 #[derive(Deserialize, PartialEq, Eq, Debug, Hash, Copy, Clone, Default)]
 pub struct Point {
-    pub x: i32,
-    pub y: i32,
+    pub x: usize,
+    pub y: usize,
 }
 
 #[derive(Deserialize, PartialEq, Eq, Debug)]

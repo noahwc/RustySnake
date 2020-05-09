@@ -5,12 +5,10 @@
 mod requests;
 #[allow(dead_code)]
 mod responses;
-#[allow(dead_code)]
 mod game;
-#[allow(dead_code)]
 mod logic;
-#[allow(dead_code)]
 mod node;
+mod board;
 #[cfg(test)]
 mod test;
 

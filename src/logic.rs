@@ -4,7 +4,7 @@ use crate::{responses, requests, game};
 pub fn get_move (turn: requests::Turn) -> responses::Move {
     let direction = responses::Move::new(responses::Movement::Up);    // default
 
-    let game = game::Game::new(turn); // new game instance
+    let game = game::Game::new(&turn); // new game instance
 
     direction   // return
 }

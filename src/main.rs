@@ -8,7 +8,9 @@ mod responses;
 #[allow(dead_code)]
 mod game;
 #[allow(dead_code)]
-mod movement;
+mod logic;
+#[allow(dead_code)]
+mod node;
 #[cfg(test)]
 mod test;
 
@@ -36,7 +38,7 @@ fn start(req: Json<requests::Turn>) -> Json<responses::Start> {
 
 #[post("/move", format = "json", data = "<req>")]
 fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
-    Json(movement::get_move(req.into_inner()))
+    Json(logic::get_move(req.into_inner()))
 }
 
 #[post("/end")]

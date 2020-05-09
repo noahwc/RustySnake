@@ -1,43 +1,33 @@
-//  Uses
+extern crate ndarray;
+
+use ndarray::prelude::*;
 use crate::requests::{Turn, Point};
+use crate::node::Node;
 
 #[derive(Debug)]
-pub struct Game {
-    pub turn: Turn,
-    pub points: Vec<Point>,
+pub struct Game<'a> {
+    pub turn: &'a Turn,
+    pub grid: Array2::<Node>,
 }
-impl Game {
+
+impl<'a> Game<'a> {
     // Constructor
-    pub fn new(t: Turn) -> Game {
+    pub fn new(t: &Turn) -> Game {
         Game {
             turn: t,
-            points: Vec::new(),
+            grid: new_array(&t),
         }        
     }
+}
+
+fn new_array (t: &Turn) -> Array2::<Node> {
+    let mut a = Array2::<Node>::default((t.board.width, t.board.height));
+
+    for j in 0..t.board.height {
+        for i in 0..t.board.width {
+            a[[i,j]] = Node::new(&t, &Point{x: i as i32, y: j as i32}, 0);
+        }
+    }
     
-    //Methods
-    pub fn update_points(&mut self) {
-        for w in 0..self.turn.board.width {
-            for h in 0..self.turn.board.height {
-                self.points.push(Point{x: w, y: h,});
-            }
-        }
-    }
-}
-
-pub struct Node {
-    point: Point,
-    weight: i32,
-}
-impl Node {
-    pub fn new(p: Point, w: i32) -> Node {
-        Node {
-            point: p,
-            weight: w,
-        }
-    }
-
-    pub fn update_weight<F>(&mut self, heuristic: F) where F: Fn(Point) -> i32 {
-        self.weight = heuristic(self.point);
-    }
+    a
 }

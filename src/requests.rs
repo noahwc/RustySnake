@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(Deserialize, PartialEq, Eq, Debug, Hash, Copy, Clone)]
+#[derive(Deserialize, PartialEq, Eq, Debug, Hash, Copy, Clone, Default)]
 pub struct Point {
     pub x: i32,
     pub y: i32,
@@ -21,8 +21,8 @@ pub struct Game {
 
 #[derive(Deserialize, PartialEq, Eq, Debug)]
 pub struct Board {
-    pub height: i32,
-    pub width: i32,
+    pub height: usize,
+    pub width: usize,
     pub food: Vec<Point>,
     pub snakes: Vec<Snake>,
 }

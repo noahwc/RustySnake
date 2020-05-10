@@ -50,6 +50,17 @@ impl Board {
     }
 }
 
+pub fn dijkstra (&mut self){
+    let mut score_map = [[Default::default(); 11]; 11];
+    let mut visited = [[Default::default(); 11]; 11];
+    for j in 0..11 {
+        for i in 0..11 {
+            visited = 0
+            score_map[i][j] = u8::max_value();
+        }
+    }
+}
+
 
 // Helper
 pub fn new_board(t: &Turn) -> [[Node; 11]; 11] {

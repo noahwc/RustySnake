@@ -1,5 +1,6 @@
 use crate::node::Node;
 use crate::requests::{Point, Turn};
+use std::collections::HashMap;
 
 pub struct Board {
     pub board: [[Node; 11]; 11],
@@ -21,6 +22,31 @@ impl Board {
         for n in self.board.iter_mut().flat_map(|r| r.iter_mut()) {
             heuristic(n);
         }
+    }
+
+    pub fn get_neighbours(&mut self, x: i8, y:i8){
+        let mut neighbours = Vec::new();
+        if(x - 1 >= 0){
+            let mut neighbour = HashMap::new();
+            neighbour.insert("x", x - 1);
+            neighbour.insert("y", y);
+        }
+        if(x + 1 < 11){
+            let mut neighbour = HashMap::new();
+            neighbour.insert("x", x + 1);
+            neighbour.insert("y", y);
+        }
+        if(y - 1 >= 0){
+            let mut neighbour = HashMap::new();
+            neighbour.insert("x", x);
+            neighbour.insert("y", y - 1);
+        }
+        if(y + 1 < 11){
+            let mut neighbour = HashMap::new();
+            neighbour.insert("x", x);
+            neighbour.insert("y", y + 1);
+        }
+        return neighbours;
     }
 }
 

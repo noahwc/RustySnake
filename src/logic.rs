@@ -1,4 +1,3 @@
-// File could use a rename for clarity, I couldn't think of anything better
 use crate::{responses, requests, game, node};
 
 pub fn get_move (turn: requests::Turn) -> responses::Move {
@@ -10,7 +9,7 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
         if n.has_food {
             n.weight = 10;
         }
-    };
+    }; // weight food nodes
 
     game.board.weight_nodes(weighting_heuristic);
 

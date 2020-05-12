@@ -11,7 +11,7 @@ impl<'a> Game<'a> {
     pub fn new(t: &Turn) -> Game {
         Game {
             turn: t,
-            board: Board::new(&t),
+            board: Board::new(),
         }        
     }
     // Methods

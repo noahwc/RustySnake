@@ -6,10 +6,12 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     let mut game = game::Game::new(&turn); // new game instance
 
     let weighting_heuristic = |n: &mut node::Node| {
-        if n.has_food {
-            n.weight = 10;
+        if n.has_snake(&turn) {
+            n.weight = 122; // moving into a snake costs more than traversing every node
+        }else {
+            n.weight = 0; // default weight for open space
         }
-    }; // weight food nodes
+    };
 
     game.board.weight_nodes(weighting_heuristic);
 

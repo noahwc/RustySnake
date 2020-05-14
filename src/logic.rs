@@ -15,5 +15,9 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
 
     game.board.weight_nodes(weighting_heuristic);
 
+    // for food in game.turn.board.food {
+    //     game.paths.push(game.board.djikstra(/*our head*/,food));
+    // }
+
     direction   // return
 }

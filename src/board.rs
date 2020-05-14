@@ -1,5 +1,6 @@
 use crate::node::Node;
 use crate::requests::Point;
+use std::collections::HashMap;
 
 pub struct Board {
     pub board: [[Node; 11]; 11],
@@ -16,6 +17,7 @@ impl Board {
             width: 11,
         }
     }
+
     // methods
     pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&mut Node){
         for n in self.board.iter_mut().flat_map(|r| r.iter_mut()) {
@@ -23,7 +25,7 @@ impl Board {
         }
     }
 
-    pub fn get_neighbours(&self, n: &Node) -> Vec<Node> {
+    pub fn get_neighbours(&self, n: Node) -> Vec<Node> {
         let mut neighbours = Vec::new();
         let x = n.point.x;
         let y = n.point.y;
@@ -42,77 +44,79 @@ impl Board {
         }
 
         neighbours
-    }
+    }   
 
-    pub fn dijkstra(&self, &start: &Node, &dest: &Node) -> Vec<Node> {
-        let mut path = vec![start];
-        let mut vertices = Vec::new();
+    pub fn djikstra(&self, start: Node, dest: Node) -> Option<Vec<Node>> {
         
-        // initialize a Vertex for each node on board
+        let mut path = Vec::new();
+        let mut map = HashMap::<Node, Vertex>::new();
+        let max_cost = 128; 
+        let start_cost = 0;      
+
+        // initialize map with a Vertex for each node on board and fills unvisited
         for &n in self.board.iter().flat_map(|n| n.iter()) {
             if n == start {
-                continue;
+                map.insert(n ,Vertex::new(n, start_cost));
             }
             else {
-                vertices.push(Vertex::new(n, 128));
+                map.insert(n ,Vertex::new(n, max_cost));
             }
-        }
+        };
 
-        let first = Vertex::new(start, 0);
-        vertices.push(first);
-
-        let mut visited = Vec::new();
-        let mut queue = vec![first];
-
-        while !queue.is_empty() {
-            let curr = queue.remove(0); // pop vertex from queue
-            
-            if curr.node == dest { // traceback path at destination
-                path.push(dest);
-                // not finished
-                continue;
+        // while not at destination
+        while map.get(&dest)?.unvisited {
+            // get (node, vertex) with lowest cost
+            let mut curr_node = start;
+            let mut curr_vert = Vertex::new(start, max_cost);
+            for (k, v) in &map {
+                if v.unvisited && v.cost < curr_vert.cost {
+                    curr_node = *k;
+                    curr_vert = *v;
+                }
             }
             
-            for adj in &self.get_neighbours(&curr.node) { // update neighbours cost and parent
-                let mut neighboor_vertices = Vec::new();
-                
-                match vertices.iter_mut().find(|v| v.node == *adj){
-                    Some(mut v) => if curr.cost < v.cost + v.node.weight {
-                        v.cost = curr.cost + v.node.weight;
-                        v.parent = curr.node;
-                        neighboor_vertices.push(v)
+            // update neighboor cost
+            for nb in &self.get_neighbours(curr_node) {
+                match map.get_mut(&nb) {
+                    Some(n) => {
+                        if n.unvisited && n.cost > curr_vert.cost + nb.weight {
+                            n.cost = curr_vert.cost + nb.weight;
+                            n.parent = curr_node;
+                        }
                     },
-                    None => continue,
-                }
-                
-                if !neighboor_vertices.is_empty() {
-                    neighboor_vertices.sort_by(|v1, v2| v1.cost.cmp(&v2.cost));
-                    queue.push(*neighboor_vertices.remove(0)); // push lowest cost neighbour in queue
+                    None => continue
                 }
             }
 
-            visited.push(curr);
+            // mark current node as visited
+            map.get_mut(&curr_node).unwrap().unvisited = false;
         }
 
+        // traceback path
+        let mut n = dest;
+        loop {
+            match map.get(&n) {
+                Some(v) => {
+                    path.push(n);
+                    n = v.parent;
+                },
+                None => break
+            }
+        }
 
-        path
+        // return path encapsulated in Option
+        if path.is_empty() {
+            return None
+        } else {
+            path.reverse();
+            return Some(path)
+        }
+
     }
-
 }
 
-// pub fn dijkstra (&mut self){
-//     let mut score_map = [[Default::default(); 11]; 11];
-//     let mut visited = [[Default::default(); 11]; 11];
-//     for j in 0..11 {
-//         for i in 0..11 {
-//             visited = 0
-//             score_map[i][j] = u8::max_value();
-//         }
-//     }
-// }
 
-
-// Helper
+// Helpers
 pub fn new_board() -> [[Node; 11]; 11] {
     let mut b = [[Default::default(); 11]; 11]; 
     for j in 0..11 {
@@ -123,26 +127,21 @@ pub fn new_board() -> [[Node; 11]; 11] {
     return b
 }
 
-// sort paths by cost
-// paths.sort_by(|a, b| cost(&b).cmp(&cost(&a)));
-pub fn cost(v: &Vec<Node>) -> i32 {
-    let mut sum: i32 = 0;
-    v.iter().for_each(|n| sum += n.weight);
-    sum
-}
-
 #[derive(PartialEq, Copy, Clone)]
 pub struct Vertex {
-    pub node: Node,
     pub cost: i32,
     pub parent: Node,
+    pub unvisited: bool
 }
+
 impl Vertex {
-    pub fn new(node: Node, cost: i32) -> Vertex {
+    pub fn new(parent: Node, cost: i32) -> Vertex {
         Vertex {
-            node: node,
             cost,
-            parent: node,
+            parent,
+            unvisited: false,
         }
     }
 }
+
+

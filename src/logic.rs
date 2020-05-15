@@ -9,15 +9,25 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
         if n.has_snake(&turn) {
             n.weight = 122; // moving into a snake costs more than traversing every node
         }else {
-            n.weight = 0; // default weight for open space
+            n.weight = 1; // default weight for open space
         }
     };
 
-    game.board.weight_nodes(weighting_heuristic);
+    game.graph.weight_nodes(weighting_heuristic);
 
-    // for food in game.turn.board.food {
-    //     game.paths.push(game.board.djikstra(/*our head*/,food));
-    // }
+    for food in &game.turn.board.food {
+        let food_node;
+        match game.graph.get_node(food){
+            Some(n) => food_node = n,
+            None => continue, 
+        }
+        match game.graph.djikstra(game.our_head(), food_node) {
+            Some(path) => game.paths.push(path),
+            None => continue,
+        }
+    }
+    //
+    // pursue game.best_path()
 
     direction   // return
 }

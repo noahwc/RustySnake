@@ -1,10 +1,10 @@
 use crate::requests::Turn;
-use crate::board::Board;
+use crate::graph::Graph;
 use crate::node::Node;
 
 pub struct Game<'a> {
     pub turn: &'a Turn,
-    pub board: Board,
+    pub graph: Graph,
     pub paths: Vec<Vec<Node>>,
 }
 
@@ -13,7 +13,7 @@ impl<'a> Game<'a> {
     pub fn new(t: &Turn) -> Game {
         Game {
             turn: t,
-            board: Board::new(),
+            graph: Graph::new(),
             paths: Vec::new(),
         }        
     }
@@ -22,6 +22,14 @@ impl<'a> Game<'a> {
     pub fn best_path(&mut self) -> &Vec<Node> {
         self.paths.sort_by(|a, b| cost(&b).cmp(&cost(&a)));
         &self.paths[0]
+    }
+
+    pub fn our_head(&self) -> &Node {
+        self.graph.board
+        .iter()
+        .flat_map(|r| r.into_iter())
+        .find(|&n| n.point == self.turn.you.body[0])
+        .unwrap()
     }
 }
 

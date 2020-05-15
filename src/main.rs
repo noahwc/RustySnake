@@ -8,7 +8,7 @@ mod responses;
 mod game;
 mod logic;
 mod node;
-mod board;
+mod graph;
 #[cfg(test)]
 mod test;
 

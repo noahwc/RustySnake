@@ -2,16 +2,16 @@ use crate::node::Node;
 use crate::requests::Point;
 use std::collections::HashMap;
 
-pub struct Board {
+pub struct Graph {
     pub board: [[Node; 11]; 11],
     pub height: usize,
     pub width: usize,
 }
 
-impl Board {
+impl Graph {
     // constructor
-    pub fn new() -> Board {
-        Board {
+    pub fn new() -> Graph {
+        Graph {
             board: new_board(),
             height: 11,
             width: 11,
@@ -46,7 +46,7 @@ impl Board {
         neighbours
     }   
 
-    pub fn djikstra(&self, start: Node, dest: Node) -> Option<Vec<Node>> {
+    pub fn djikstra(&self, &start: &Node, dest: Node) -> Option<Vec<Node>> {
         
         let mut path = Vec::new();
         let mut map = HashMap::<Node, Vertex>::new();
@@ -112,6 +112,15 @@ impl Board {
             return Some(path)
         }
 
+    }
+
+    pub fn get_node (&self, &p: &Point) -> Option<Node> {
+        for &n in self.board.iter().flat_map(|r| r.into_iter()) {
+            if n.point == p {
+                return Some(n)
+            }
+        }
+        return None
     }
 }
 

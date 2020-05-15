@@ -63,18 +63,18 @@ pub enum TailType {
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Move {
     #[serde(rename = "move")]
-    movement: Movement,
+    pub movement: Direction,
 }
 
 impl Move {
-    pub fn new(movement: Movement) -> Move {
+    pub fn new(movement: Direction) -> Move {
         Move { movement }
     }
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "lowercase"))]
-pub enum Movement {
+pub enum Direction {
     Right,
     Left,
     Up,
@@ -112,11 +112,10 @@ mod test {
     #[test]
     fn serialize_move() {
         let response = Move {
-            movement: Movement::Right,
+            movement: Direction::Right,
         };
 
         let correct_serialized_response = "{\"move\":\"right\"}";
-
         match serde_json::to_string(&response) {
             Err(e) => {
                 eprintln!("Returned value is Err: {}", e);
@@ -143,7 +142,7 @@ mod test {
 
         let deserialized_move = serde_json::from_str(&string).unwrap();
         let correct_move = Move {
-            movement: Movement::Right,
+            movement: Direction::Right,
         };
         assert_eq!(correct_move, deserialized_move);
     }

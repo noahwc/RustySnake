@@ -1,7 +1,7 @@
 use crate::{responses, requests, game, node};
 
 pub fn get_move (turn: requests::Turn) -> responses::Move {
-    let direction = responses::Move::new(responses::Movement::Up);    // default
+    let mut direction = responses::Move::new(responses::Direction::Up);    // default
 
     let mut game = game::Game::new(&turn); // new game instance
 
@@ -13,8 +13,9 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
         }
     };
 
-    game.graph.weight_nodes(weighting_heuristic);
+    game.graph.weight_nodes(weighting_heuristic); // weight nodes with heuristic
 
+    // get all cheapest paths to food
     for food in &game.turn.board.food {
         let food_node;
         match game.graph.get_node(food){
@@ -26,8 +27,20 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
             None => continue,
         }
     }
-    //
-    // pursue game.best_path()
+    
+    // pursue best path
+    let best_path = game.best_path();
+    let x0 = best_path[0].point.x;
+    let y0 = best_path[0].point.y;
+    let x1 = best_path[1].point.x;
+    let y1 = best_path[1].point.y;
+    match (x1 as i32 - x0 as i32, y1 as i32 - y0 as i32) {
+        (1, 0) => direction.movement = responses::Direction::Right,
+        (-1, 0) => direction.movement = responses::Direction::Left,
+        (0, 1) => direction.movement = responses::Direction::Up,
+        (0, -1) => direction.movement = responses::Direction::Down,
+        _ => (),
+    }
 
     direction   // return
 }

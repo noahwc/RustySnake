@@ -63,11 +63,11 @@ impl Graph {
             }
         };
 
+        let mut curr_node = start;
+        let mut curr_vert = Vertex::new(start, max_cost);
         // while not at destination
         while map.get(&dest)?.unvisited {
             // get (node, vertex) with lowest cost
-            let mut curr_node = start;
-            let mut curr_vert = Vertex::new(start, max_cost);
             for (k, v) in &map {
                 if v.unvisited && v.cost < curr_vert.cost {
                     curr_node = *k;

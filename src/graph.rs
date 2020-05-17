@@ -53,7 +53,7 @@ impl Graph {
         let max_cost = 128; 
         let start_cost = 0;      
 
-        // initialize map with a Vertex for each node on board and fills unvisited
+        // initialize map with a Vertex for each node on board and fills visited
         for &n in self.board.iter().flat_map(|n| n.iter()) {
             if n == start {
                 map.insert(n ,Vertex::new(n, start_cost));
@@ -66,10 +66,10 @@ impl Graph {
         let mut curr_node = start;
         let mut curr_vert = Vertex::new(start, max_cost);
         // while not at destination
-        while map.get(&dest)?.unvisited {
+        while !map.get(&dest)?.visited {
             // get (node, vertex) with lowest cost
             for (k, v) in &map {
-                if v.unvisited && v.cost < curr_vert.cost {
+                if !v.visited && v.cost < curr_vert.cost {
                     curr_node = *k;
                     curr_vert = *v;
                 }
@@ -79,7 +79,7 @@ impl Graph {
             for nb in &self.get_neighbours(curr_node) {
                 match map.get_mut(&nb) {
                     Some(v) => {
-                        if v.unvisited && v.cost > curr_vert.cost + nb.weight {
+                        if !v.visited && v.cost > curr_vert.cost + nb.weight {
                             v.cost = curr_vert.cost + nb.weight;
                             v.parent = curr_node;
                         }
@@ -89,7 +89,7 @@ impl Graph {
             }
 
             // mark current node as visited
-            map.get_mut(&curr_node).unwrap().unvisited = false;
+            map.get_mut(&curr_node).unwrap().visited = true;
         }
 
         // traceback path
@@ -140,7 +140,7 @@ pub fn new_board() -> [[Node; 11]; 11] {
 pub struct Vertex {
     pub cost: i32,
     pub parent: Node,
-    pub unvisited: bool
+    pub visited: bool
 }
 
 impl Vertex {
@@ -148,7 +148,7 @@ impl Vertex {
         Vertex {
             cost,
             parent,
-            unvisited: false,
+            visited: false,
         }
     }
 }

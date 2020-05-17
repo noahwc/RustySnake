@@ -9,6 +9,7 @@ mod game;
 mod logic;
 mod node;
 mod graph;
+mod logging;
 #[cfg(test)]
 mod test;
 
@@ -36,6 +37,7 @@ fn start(req: Json<requests::Turn>) -> Json<responses::Start> {
 
 #[post("/move", format = "json", data = "<req>")]
 fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
+    logging::log(&req);
     Json(logic::get_move(req.into_inner()))
 }
 

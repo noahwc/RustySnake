@@ -1,12 +1,12 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, PartialEq, Eq, Debug, Hash, Copy, Clone, Default)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Hash, Copy, Clone, Default)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
 }
 
-#[derive(Deserialize, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Turn {
     pub game: Game,
     pub turn: u32,
@@ -14,12 +14,12 @@ pub struct Turn {
     pub you: Snake,
 }
 
-#[derive(Deserialize, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Game {
     pub id: String,
 }
 
-#[derive(Deserialize, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Board {
     pub height: usize,
     pub width: usize,
@@ -27,7 +27,7 @@ pub struct Board {
     pub snakes: Vec<Snake>,
 }
 
-#[derive(Deserialize, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Snake {
     pub id: String,
     pub name: String,

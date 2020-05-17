@@ -22,7 +22,7 @@ impl<'a> Game<'a> {
     
     // Methods
     pub fn best_path(&mut self) -> &Vec<Node> {
-        self.paths.sort_by(|a, b| cost(&b).cmp(&cost(&a)));
+        self.paths.sort_by(|a, b| cost(&a).cmp(&cost(&b)));
         &self.paths[0]
     }
 }

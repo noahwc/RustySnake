@@ -33,13 +33,13 @@ impl Graph {
         if x < 10 {
             neighbours.push(self.board[x+1][y]);
         }
-        if x < 1 {
+        if x > 1 {
             neighbours.push(self.board[x-1][y]);            
         }
         if y < 10 {
             neighbours.push(self.board[x][y+1]);
         }
-        if y < 1 {
+        if y > 1 {
             neighbours.push(self.board[x][y-1]);
         }
 
@@ -57,17 +57,16 @@ impl Graph {
         for &n in self.board.iter().flat_map(|n| n.iter()) {
             if n == start {
                 map.insert(n ,Vertex::new(n, start_cost));
-                // println!("INSERTING START: {:?}", start);
             }
             else {
                 map.insert(n ,Vertex::new(n, max_cost));
             }
         };
 
-        let mut curr_node = start;
-        let mut curr_vert = *map.get(&start)?;
         // while not at destination
         while !map.get(&dest)?.visited {
+            let mut curr_node = start;
+            let mut curr_vert = Vertex::new(start, max_cost);
             // get (node, vertex) with lowest cost
             for (k, v) in &map {
                 if !v.visited && v.cost < curr_vert.cost {
@@ -75,7 +74,6 @@ impl Graph {
                     curr_vert = *v;
                 }
             }
-            // println!("CURR_VERT: {:?}", curr_vert);
             
             // update neighboor cost
             for nb in &self.get_neighbours(curr_node) {
@@ -91,8 +89,8 @@ impl Graph {
             }
             // mark current node as visited
             match map.get_mut(&curr_node) {
-                Some(n) => n.visited = true,
-                None => println!("CURR_NODE: {:?}", curr_node),
+                Some(v) => v.visited = true,
+                None => println!("{:?} NOT IN MAP", curr_node),
             }
         }
 
@@ -102,7 +100,11 @@ impl Graph {
             match map.get(&n) {
                 Some(v) => {
                     path.push(n);
-                    n = v.parent;
+                    if n!=v.parent{
+                        n = v.parent;
+                    } else {
+                        break
+                    }
                 },
                 None => break
             }
@@ -110,6 +112,7 @@ impl Graph {
 
         // return path encapsulated in Option
         if path.is_empty() {
+            println!("NO PATH");
             return None
         } else {
             path.reverse();

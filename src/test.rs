@@ -81,7 +81,7 @@ fn movement() {
                 "width": 15,
                 "food": [
                 {
-                    "x": 1,
+                    "x": 2,
                     "y": 3
                 }
                 ],

@@ -6,6 +6,7 @@ pub struct Game<'a> {
     pub turn: &'a Turn,
     pub graph: Graph,
     pub paths: Vec<Vec<Node>>,
+    pub our_head: Node,
 }
 
 impl<'a> Game<'a> {
@@ -15,6 +16,7 @@ impl<'a> Game<'a> {
             turn: t,
             graph: Graph::new(),
             paths: Vec::new(),
+            our_head: Node::new(&t.you.body[0], 0),
         }        
     }
     
@@ -22,14 +24,6 @@ impl<'a> Game<'a> {
     pub fn best_path(&mut self) -> &Vec<Node> {
         self.paths.sort_by(|a, b| cost(&b).cmp(&cost(&a)));
         &self.paths[0]
-    }
-
-    pub fn our_head(&self) -> &Node {
-        self.graph.board
-        .iter()
-        .flat_map(|r| r.into_iter())
-        .find(|&n| n.point == self.turn.you.body[0])
-        .unwrap()
     }
 }
 

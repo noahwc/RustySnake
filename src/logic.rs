@@ -22,7 +22,7 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
             Some(n) => food_node = n,
             None => continue, 
         }
-        match game.graph.djikstra(game.our_head(), food_node) {
+        match game.graph.djikstra(game.our_head, food_node) {
             Some(path) => game.paths.push(path),
             None => continue,
         }

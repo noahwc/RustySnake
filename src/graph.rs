@@ -46,7 +46,7 @@ impl Graph {
         neighbours
     }   
 
-    pub fn djikstra(&self, &start: &Node, dest: Node) -> Option<Vec<Node>> {
+    pub fn djikstra(&self, start: Node, dest: Node) -> Option<Vec<Node>> {
         
         let mut path = Vec::new();
         let mut map = HashMap::<Node, Vertex>::new();
@@ -78,10 +78,10 @@ impl Graph {
             // update neighboor cost
             for nb in &self.get_neighbours(curr_node) {
                 match map.get_mut(&nb) {
-                    Some(n) => {
-                        if n.unvisited && n.cost > curr_vert.cost + nb.weight {
-                            n.cost = curr_vert.cost + nb.weight;
-                            n.parent = curr_node;
+                    Some(v) => {
+                        if v.unvisited && v.cost > curr_vert.cost + nb.weight {
+                            v.cost = curr_vert.cost + nb.weight;
+                            v.parent = curr_node;
                         }
                     },
                     None => continue

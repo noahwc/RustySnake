@@ -51,12 +51,13 @@ impl Graph {
         let mut path = Vec::new();
         let mut map = HashMap::<Node, Vertex>::new();
         let max_cost = 128; 
-        let start_cost = 0;      
+        let start_cost = 1;      
 
         // initialize map with a Vertex for each node on board and fills visited
         for &n in self.board.iter().flat_map(|n| n.iter()) {
             if n == start {
                 map.insert(n ,Vertex::new(n, start_cost));
+                // println!("INSERTING START: {:?}", start);
             }
             else {
                 map.insert(n ,Vertex::new(n, max_cost));
@@ -64,7 +65,7 @@ impl Graph {
         };
 
         let mut curr_node = start;
-        let mut curr_vert = Vertex::new(start, max_cost);
+        let mut curr_vert = *map.get(&start)?;
         // while not at destination
         while !map.get(&dest)?.visited {
             // get (node, vertex) with lowest cost
@@ -74,6 +75,7 @@ impl Graph {
                     curr_vert = *v;
                 }
             }
+            // println!("CURR_VERT: {:?}", curr_vert);
             
             // update neighboor cost
             for nb in &self.get_neighbours(curr_node) {
@@ -87,9 +89,11 @@ impl Graph {
                     None => continue
                 }
             }
-
             // mark current node as visited
-            map.get_mut(&curr_node).unwrap().visited = true;
+            match map.get_mut(&curr_node) {
+                Some(n) => n.visited = true,
+                None => println!("CURR_NODE: {:?}", curr_node),
+            }
         }
 
         // traceback path
@@ -136,7 +140,7 @@ pub fn new_board() -> [[Node; 11]; 11] {
     return b
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Vertex {
     pub cost: i32,
     pub parent: Node,

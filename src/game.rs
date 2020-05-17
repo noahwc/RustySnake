@@ -16,7 +16,7 @@ impl<'a> Game<'a> {
             turn: t,
             graph: Graph::new(),
             paths: Vec::new(),
-            our_head: Node::new(&t.you.body[0], 0),
+            our_head: Node::new(&t.you.body[0], 1),
         }        
     }
     

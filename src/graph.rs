@@ -33,13 +33,13 @@ impl Graph {
         if x < 10 {
             neighbours.push(self.board[x+1][y]);
         }
-        if x > 1 {
+        if x > 0 {
             neighbours.push(self.board[x-1][y]);            
         }
         if y < 10 {
             neighbours.push(self.board[x][y+1]);
         }
-        if y > 1 {
+        if y > 0 {
             neighbours.push(self.board[x][y-1]);
         }
 
@@ -96,12 +96,14 @@ impl Graph {
 
         // traceback path
         let mut n = dest;
+        //println!("DEST: {:?}", dest);
         loop {
             match map.get(&n) {
                 Some(v) => {
                     path.push(n);
                     if n!=v.parent{
                         n = v.parent;
+                        println!("Node: {:?}", n);
                     } else {
                         break
                     }

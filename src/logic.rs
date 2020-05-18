@@ -28,7 +28,7 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     
     // pursue best path
     let best_path = game.best_path();
-    // println!("DESTINATION: {:?}", best_path.last());
+    //println!("DESTINATION: {:?}", best_path.last());
     let direction = get_direction(&best_path[0], &best_path[1]);
 
     responses::Move::new(direction)   // return

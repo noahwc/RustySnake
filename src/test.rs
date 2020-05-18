@@ -2,7 +2,6 @@ use super::rocket;
 use crate::responses;
 use rocket::http::{ContentType, Status};
 use rocket::local::Client;
-use std::env;
 use std::fs::File;
 use std::io::Read;
 

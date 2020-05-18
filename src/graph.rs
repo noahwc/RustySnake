@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 pub struct Graph {
     pub board: [[Node; 11]; 11],
+    pub map: HashMap::<Node, Vertex>,
     pub height: usize,
     pub width: usize,
 }
@@ -13,6 +14,7 @@ impl Graph {
     pub fn new() -> Graph {
         Graph {
             board: new_board(),
+            map: HashMap::<Node, Vertex>::new(),
             height: 11,
             width: 11,
         }
@@ -46,69 +48,62 @@ impl Graph {
         neighbours
     }   
 
-    pub fn djikstra(&self, start: Node, dest: Node) -> Option<Vec<Node>> {
-        
-        let mut path = Vec::new();
-        let mut map = HashMap::<Node, Vertex>::new();
+    pub fn djikstra(&mut self, start: Node) {
+        let mut unvisited = Vec::new();
         let max_cost = 128; 
         let start_cost = 1;      
 
         // initialize map with a Vertex for each node on board and fills visited
         for &n in self.board.iter().flat_map(|n| n.iter()) {
             if n == start {
-                map.insert(n ,Vertex::new(n, start_cost));
+                self.map.insert(n ,Vertex::new(n, start_cost));
             }
             else {
-                map.insert(n ,Vertex::new(n, max_cost));
+                self.map.insert(n ,Vertex::new(n, max_cost));
             }
+            unvisited.push(n);
         };
 
-        // while not at destination
-        while !map.get(&dest)?.visited {
-            let mut curr_node = start;
-            let mut curr_vert = Vertex::new(start, max_cost);
-            // get (node, vertex) with lowest cost
-            for (k, v) in &map {
-                if !v.visited && v.cost < curr_vert.cost {
-                    curr_node = *k;
-                    curr_vert = *v;
-                }
-            }
+        // while there are unvisited nodes
+        while !unvisited.is_empty() {
+            // sort unvisited nodes by cost
+            unvisited.sort_by(|a, b| {
+                self.map.get(a).unwrap().cost
+                .cmp(&self.map.get(b).unwrap().cost)
+            });
+
+            // take node with lowest cost
+            let curr_node = unvisited.remove(0);
+            let curr_vert = *self.map.get(&curr_node).unwrap();
             
             // update neighboor cost
             for nb in &self.get_neighbours(curr_node) {
-                match map.get_mut(&nb) {
-                    Some(v) => {
-                        if !v.visited && v.cost > curr_vert.cost + nb.weight {
-                            v.cost = curr_vert.cost + nb.weight;
-                            v.parent = curr_node;
-                        }
-                    },
-                    None => continue
+                if unvisited.contains(nb) {
+                    match self.map.get_mut(&nb) {
+                        Some(v) => {
+                            if v.cost > curr_vert.cost + nb.weight {
+                                v.cost = curr_vert.cost + nb.weight;
+                                v.parent = curr_node;
+                            }
+                        },
+                        None => continue
+                    }
                 }
             }
-            // mark current node as visited
-            match map.get_mut(&curr_node) {
-                Some(v) => v.visited = true,
-                None => println!("{:?} NOT IN MAP", curr_node),
-            }
         }
-
+    }
+    
+    pub fn path_to(&self, dest: Node) -> Option<Vec<Node>> {
+        let mut path = Vec::<Node>::new();
         // traceback path
         let mut n = dest;
-        //println!("DEST: {:?}", dest);
         loop {
-            match map.get(&n) {
-                Some(v) => {
-                    path.push(n);
-                    if n!=v.parent{
-                        n = v.parent;
-                        println!("Node: {:?}", n);
-                    } else {
-                        break
-                    }
-                },
-                None => break
+            let v = self.map.get(&n).unwrap();
+            path.push(n);
+            if n != v.parent {
+                n = v.parent;
+            } else {
+                break
             }
         }
 
@@ -120,7 +115,6 @@ impl Graph {
             path.reverse();
             return Some(path)
         }
-
     }
 
     pub fn get_node (&self, &p: &Point) -> Option<Node> {
@@ -149,7 +143,6 @@ pub fn new_board() -> [[Node; 11]; 11] {
 pub struct Vertex {
     pub cost: i32,
     pub parent: Node,
-    pub visited: bool
 }
 
 impl Vertex {
@@ -157,7 +150,6 @@ impl Vertex {
         Vertex {
             cost,
             parent,
-            visited: false,
         }
     }
 }

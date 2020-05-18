@@ -13,14 +13,12 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
 
     game.graph.weight_nodes(weighting_heuristic); // weight nodes with heuristic
 
+    game.graph.djikstra(game.our_head); // run djikstra for all nodes
+
     // get all cheapest paths to food
     for food in &game.turn.board.food {
-        let food_node;
-        match game.graph.get_node(food){
-            Some(n) => food_node = n,
-            None => continue, 
-        }
-        match game.graph.djikstra(game.our_head, food_node) {
+        let food_node = game.graph.get_node(food).unwrap();
+        match game.graph.path_to(food_node) {
             Some(path) => game.paths.push(path),
             None => continue,
         }

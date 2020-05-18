@@ -26,8 +26,8 @@ fn index() -> &'static str {
     "Helo World"
 }
 
-#[post("/start", format = "json", data = "<req>")]
-fn start(req: Json<requests::Turn>) -> Json<responses::Start> {
+#[post("/start")]
+fn start() -> Json<responses::Start> {
     Json(responses::Start::new(
         "#CE3D16".to_string(),
         responses::HeadType::Regular,
@@ -41,8 +41,9 @@ fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
     Json(logic::get_move(req.into_inner()))
 }
 
-#[post("/end")]
-fn end() -> &'static str {
+#[post("/end", format = "json", data = "<req>")]
+fn end(req: Json<requests::Turn>) -> &'static str {
+    println!("GAME ID: {}", req.into_inner().game.id);
     "Thanks for the game"
 }
 

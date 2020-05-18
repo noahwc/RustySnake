@@ -108,12 +108,11 @@ impl Graph {
         }
 
         // return path encapsulated in Option
-        if path.is_empty() {
-            println!("NO PATH");
-            return None
-        } else {
+        if path.len() > 1 {
             path.reverse();
             return Some(path)
+        } else {
+            return None
         }
     }
 

@@ -1,12 +1,12 @@
-use crate::requests::Turn;
+use crate::requests::{Turn, Point};
 use crate::graph::Graph;
-use crate::node::Node;
 
 pub struct Game<'a> {
     pub turn: &'a Turn,
     pub graph: Graph,
-    pub paths: Vec<Vec<Node>>,
-    pub our_head: Node,
+    pub our_head: Point,
+    pub our_tail: Point,
+    pub snake_weight: i32,
 }
 
 impl<'a> Game<'a> {
@@ -15,21 +15,9 @@ impl<'a> Game<'a> {
         Game {
             turn: t,
             graph: Graph::new(),
-            paths: Vec::new(),
-            our_head: Node::new(&t.you.body[0], 1),
+            our_head: *t.you.body.first().unwrap(),
+            our_tail: *t.you.body.last().unwrap(),
+            snake_weight: 122,
         }        
-    }
-    
-    // Methods
-    pub fn best_path(&mut self) -> &Vec<Node> {
-        self.paths.sort_by(|a, b| cost(&a).cmp(&cost(&b)));
-        &self.paths[0]
-    }
-}
-
-// Helpers
-pub fn cost(v: &Vec<Node>) -> i32 {
-    let mut sum: i32 = 0;
-    v.iter().for_each(|n| sum += n.weight);
-    sum
+    }   
 }

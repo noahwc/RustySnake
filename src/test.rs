@@ -17,49 +17,6 @@ fn start() {
     let client = Client::new(rocket()).expect("Failed to create client instance");
     let mut response = client
         .post("/start")
-        .header(ContentType::JSON)
-        .body(
-            r#"{
-            "game": {
-                "id": "game-id-string"
-            },
-            "turn": 4,
-            "board": {
-                "height": 15,
-                "width": 15,
-                "food": [
-                {
-                    "x": 1,
-                    "y": 3
-                }
-                ],
-                "snakes": [
-                    {
-                        "id": "snake-id-string",
-                        "name": "Sneky Snek",
-                        "health": 90,
-                        "body": [
-                            {
-                                "x": 1,
-                                "y": 3
-                            }
-                        ]
-                    }
-                ]
-            },
-            "you": {
-                "id": "snake-id-string",
-                "name": "Sneky Snek",
-                "health": 90,
-                "body": [
-                {
-                    "x": 1,
-                    "y": 3
-                }
-                ]
-            }
-        }"#,
-        )
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
     // test the response to match the regex
@@ -69,14 +26,14 @@ fn start() {
 #[test]
 fn movement() {
     // set game id and turn here
-    let game_id = "19f1c9ea-c539-49eb-a09d-39647c3043de";
-    let turn: usize = 58;
+    let game_id = "15345b11-b331-4f4c-8e21-8250051d0f6b";
+    let turn: usize = 306;
 
     let mut f = File::open(format!("./logs/{}.txt", game_id)).expect("failed to open file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");
     let turns: Vec<&str> = buffer.lines().collect();
-    let turn_data = turns[turn];
+    let turn_data = turns[turn-1];
 
     let client = Client::new(rocket()).expect("Failed to create client instance");
     let mut response = client
@@ -88,11 +45,26 @@ fn movement() {
     // test the response to match the regex
     let body = response.body_string().unwrap();
     let _move: responses::Move = serde_json::from_str(&body).unwrap();
+    println!("MOVE: {:?}", _move);
 }
 
 #[test]
 fn end() {
+    // set game id and turn here
+    let game_id = "19f1c9ea-c539-49eb-a09d-39647c3043de";
+    let turn: usize = 64;
+
+    let mut f = File::open(format!("./logs/{}.txt", game_id)).expect("failed to open file");
+    let mut buffer = String::new();
+    f.read_to_string(&mut buffer).expect("failed to read file");
+    let turns: Vec<&str> = buffer.lines().collect();
+    let turn_data = turns[turn-2];
+    
     let client = Client::new(rocket()).expect("Failed to create client instance");
-    let response = client.post("/end").dispatch();
+    let response = client
+        .post("/end")
+        .header(ContentType::JSON)
+        .body(turn_data)
+        .dispatch();
     assert_eq!(response.status(), Status::Ok);
 }

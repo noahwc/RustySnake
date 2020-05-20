@@ -47,51 +47,6 @@ impl Graph {
         }
 
         neighbours
-    }   
-
-    pub fn djikstra2(&mut self, start: Node){
-        let mut pq = BinaryHeap::new();
-
-        // TODO: write pq sorting
-
-        let mut unvisited = Vec::new();
-        let max_cost = 128; 
-        let start_cost = 1;      
-
-        // initialize map with a Vertex for each node on board and fills visited
-        for &n in self.board.iter().flat_map(|n| n.iter()) {
-            if n == start {
-                self.map.insert(n ,Vertex::new(n, start_cost));
-            }
-            else {
-                self.map.insert(n ,Vertex::new(n, max_cost));
-            }
-            unvisited.push(n);
-        };
-
-        pq.push(start)
-
-        while !pq.is_empty(){
-             // take node with lowest cost
-             let curr_node = pq.pop();
-             let curr_vert = *self.map.get(&curr_node).unwrap();
-             
-             // update neighboor cost
-             for nb in &self.get_neighbours(curr_node) {
-                 if unvisited.contains(nb) {
-                     match self.map.get_mut(&nb) {
-                         Some(v) => {
-                             if v.cost > curr_vert.cost + nb.weight {
-                                    v.cost = curr_vert.cost + nb.weight;
-                                    v.parent = curr_node;
-                                    // TODO: push nodes to pq
-                             }
-                         },
-                         None => continue
-                     }
-                 }
-             }
-        } 
     }
 
     pub fn djikstra(&mut self, start: Node) {

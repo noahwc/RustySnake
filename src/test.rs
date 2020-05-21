@@ -26,8 +26,8 @@ fn start() {
 #[test]
 fn movement() {
     // set game id and turn here
-    let game_id = "15345b11-b331-4f4c-8e21-8250051d0f6b";
-    let turn: usize = 306;
+    let game_id = "4ff11f4a-bc02-454c-83c4-a76e92211103";
+    let turn: usize = 10;
 
     let mut f = File::open(format!("./logs/{}.txt", game_id)).expect("failed to open file");
     let mut buffer = String::new();

@@ -1,13 +1,11 @@
 use crate::node::Node;
 use crate::requests::Point;
 use std::collections::HashMap;
-use std::collections::BinaryHeap;
 
 pub struct Graph {
     pub board: [[Node; 11]; 11],
     pub map: HashMap::<Node, Vertex>,
-    pub height: usize,
-    pub width: usize,
+    pub targets: Vec::<Node>,
 }
 
 impl Graph {
@@ -16,15 +14,17 @@ impl Graph {
         Graph {
             board: new_board(),
             map: HashMap::<Node, Vertex>::new(),
-            height: 11,
-            width: 11,
+            targets: Vec::new(),
         }
     }
 
     // methods
-    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&mut Node){
+    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&Node) -> i32{
         for n in self.board.iter_mut().flat_map(|r| r.iter_mut()) {
-            heuristic(n);
+            n.weight = heuristic(n);
+            if n.weight < 0 {
+                self.targets.push(*n);
+            }
         }
     }
 
@@ -47,7 +47,7 @@ impl Graph {
         }
 
         neighbours
-    }
+    }   
 
     pub fn djikstra(&mut self, start: Node) {
         let mut unvisited = Vec::new();
@@ -94,10 +94,10 @@ impl Graph {
         }
     }
     
-    pub fn path_to(&self, dest: Node) -> Option<Vec<Node>> {
+    pub fn path_to(&self, dest: &Node) -> Option<Vec<Node>> {
         let mut path = Vec::<Node>::new();
         // traceback path
-        let mut n = dest;
+        let mut n = *dest;
         loop {
             let v = self.map.get(&n).unwrap();
             path.push(n);
@@ -117,9 +117,9 @@ impl Graph {
         }
     }
 
-    pub fn get_node (&self, &p: &Point) -> Option<Node> {
+    pub fn get_node (&self, p: &Point) -> Option<Node> {
         for &n in self.board.iter().flat_map(|r| r.into_iter()) {
-            if n.point == p {
+            if n.point == *p {
                 return Some(n)
             }
         }

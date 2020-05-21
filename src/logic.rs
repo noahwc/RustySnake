@@ -3,66 +3,59 @@ use crate::{responses, requests, game, node};
 pub fn get_move (turn: requests::Turn) -> responses::Move {
     // PREREQS //
     let mut game = game::Game::new(&turn); // new game instance
-    let weighting_heuristic = |n: &mut node::Node| {
+    let mut paths = Vec::new();
+    let head = *turn.you.body.first().expect("no head!");
+    let tail = *turn.you.body.last().expect("no tail!");
+
+    
+    // EARLY GAME //
+    let empty_weight = 1;
+    let snake_weight = 122;
+    let food_weight = -15;
+    let tail_weight = -3;
+    let head_weight = 0;
+    
+    let weighting_heuristic = |n: &node::Node| -> i32 {
         if n.has_snake(&turn) {
-            n.weight = 122; // moving into a snake costs more than traversing every node
-        }else {
-            n.weight = 1; // default weight for open space
+            if n.point == head {
+                return head_weight
+            } if n.point == tail && !n.stacked(&turn) {
+                return tail_weight
+            } else {
+                return snake_weight
+            }
+        } if n.has_food(&turn) {
+            return food_weight
+        } else {
+            return empty_weight
         }
     };
-    game.graph.weight_nodes(weighting_heuristic); // weight nodes with heuristic
-    game.graph.djikstra(game.graph.get_node(&game.our_head).unwrap()); // run djikstra to all nodes from head
-
-    // EARLY GAME //
-    match eat(&game) {
-        Some(path) => return responses::Move::new(get_direction(&path[0], &path[1])),
-        None => (),
-    }
-    match chase_tail(&game) {
-        Some(path) => return responses::Move::new(get_direction(&path[0], &path[1])),
-        None => (),
-    }
-
     // MID GAME //
 
     // LATE GAME //
     
-
-    return responses::Move::new(responses::Direction::Up)   // return default direction
-}
-
-fn eat(game: &game::Game) -> Option<Vec<node::Node>> {
-    let mut paths = Vec::new();
-    // get all cheapest paths to food
-    for food in &game.turn.board.food {
-        let food_node = game.graph.get_node(food).expect("expected food!");
-        match game.graph.path_to(food_node) {
+    // PATHS //
+    game.graph.weight_nodes(weighting_heuristic);
+    game.graph.djikstra(game.graph.get_node(&head).expect("no head in graph!"));
+    for n in &game.graph.targets {
+        match game.graph.path_to(n) {
             Some(path) => paths.push(path),
-            None => continue,
+            None => (),
         }
     }
-
-    // sort paths and return best, remove paths through snakes
-    paths.sort_by(|a, b| cost(&a).cmp(&cost(&b)));
-    paths.iter().filter(|p| cost(&p) < game.snake_weight).nth(0).cloned()
-}
-
-// UGLY PLS FIX
-fn chase_tail(game: &game::Game) -> Option<Vec<node::Node>> {
-    let tail = game.graph.get_node(&game.our_tail).expect("no tail!");
-    match game.graph.path_to(tail) {
-        Some(path) => {
-            if cost(&path) < 2 * game.snake_weight {
-                return Some(path)
-            } else {
-                return None
-            }
-        },
-        None => return None
+    paths.sort_by(|a,b| cost(a).cmp(&cost(b)));
+    // ADD FLOOD FILL CHECK HERE //
+    if paths.is_empty() {
+        return responses::Move::new(responses::Direction::Up)   // return default direction
+    } else {
+        return responses::Move::new(get_direction(paths.first().expect("no path in paths!")))
     }
+
 }
 
-fn get_direction(a: &node::Node, b: &node::Node) -> responses::Direction {
+fn get_direction(path: &Vec<node::Node>) -> responses::Direction {
+    let a = path.first().expect("no first node!");
+    let b = path.iter().nth(1).expect("no second node!");
     if b.point.x > a.point.x {
         return responses::Direction::Right
     } if b.point.x < a.point.x {

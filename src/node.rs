@@ -20,10 +20,14 @@ impl Node {
 
     pub fn has_snake(&self, t: &Turn) -> bool {
         for snake in &t.board.snakes {
-            if snake.id == t.you.id && self.point == snake.body[0] {
-                return false
-            }
             return snake.body.iter().any(|&p| p == self.point)
+        }
+        false
+    }
+
+    pub fn stacked(&self, t: &Turn) -> bool {
+        for snake in &t.board.snakes {
+            return snake.body.windows(2).any(|w| w[0] == w[1])
         }
         false
     }

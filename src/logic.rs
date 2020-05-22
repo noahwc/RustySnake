@@ -4,8 +4,9 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     // PREREQS //
     let mut game = game::Game::new(&turn); // new game instance
     let mut paths = Vec::new();
-    let head = *turn.you.body.first().expect("no head!");
-    let tail = *turn.you.body.last().expect("no tail!");
+    let head = game.graph.get_node(turn.you.body.first().unwrap()).expect("no head");
+    let tail = game.graph.get_node(turn.you.body.last().unwrap()).expect("no tail");
+    let len = turn.you.body.len();
 
     
     // EARLY GAME //
@@ -17,9 +18,9 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     
     let weighting_heuristic = |n: &node::Node| -> i32 {
         if n.has_snake(&turn) {
-            if n.point == head {
+            if n.point == head.point {
                 return head_weight
-            } if n.point == tail && !n.stacked(&turn) {
+            } if n.point == tail.point && !n.stacked(&turn) {
                 return tail_weight
             } else {
                 return snake_weight
@@ -36,21 +37,22 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     
     // PATHS //
     game.graph.weight_nodes(weighting_heuristic);
-    game.graph.djikstra(game.graph.get_node(&head).expect("no head in graph!"));
+    game.graph.djikstra(head);
+   
     for n in &game.graph.targets {
         match game.graph.path_to(n) {
             Some(path) => paths.push(path),
             None => (),
         }
     }
+    
     paths.sort_by(|a,b| cost(a).cmp(&cost(b)));
-    // ADD FLOOD FILL CHECK HERE //
-    if paths.is_empty() {
-        return responses::Move::new(responses::Direction::Up)   // return default direction
-    } else {
-        return responses::Move::new(get_direction(paths.first().expect("no path in paths!")))
+    
+    // checking if next move puts us in a dead end
+    match paths.iter().find(|&path| len > game.graph.flood_fill(&vec![path[1]], &turn)) {
+        Some(path) => return responses::Move::new(get_direction(path)),
+        None => return responses::Move::new(responses::Direction::Up)
     }
-
 }
 
 fn get_direction(path: &Vec<node::Node>) -> responses::Direction {

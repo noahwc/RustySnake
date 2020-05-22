@@ -1,6 +1,6 @@
 use crate::node::Node;
-use crate::requests::Point;
-use std::collections::HashMap;
+use crate::requests::{Point, Turn};
+use std::collections::{HashMap, VecDeque};
 
 pub struct Graph {
     pub board: [[Node; 11]; 11],
@@ -69,15 +69,22 @@ impl Graph {
         while !unvisited.is_empty() {
             // sort unvisited nodes by cost
             unvisited.sort_by(|a, b| {
-                self.map.get(a).unwrap().cost
-                .cmp(&self.map.get(b).unwrap().cost)
+                self.map
+                .get(a)
+                .unwrap()
+                .cost
+                .cmp(
+                    &self.map
+                    .get(b)
+                    .unwrap()
+                    .cost)
             });
 
             // take node with lowest cost
             let curr_node = unvisited.remove(0);
-            let curr_vert = *self.map.get(&curr_node).unwrap();
+            let curr_vert = *self.map.get(&curr_node).expect("curr node not in map");
             
-            // update neighboor cost
+            // update neighbour cost
             for nb in &self.get_neighbours(curr_node) {
                 if unvisited.contains(nb) {
                     match self.map.get_mut(&nb) {
@@ -92,6 +99,38 @@ impl Graph {
                 }
             }
         }
+    }
+
+    pub fn flood_fill(&mut self, sources: &Vec<Node>, turn: &Turn) -> usize {
+        let mut queue = VecDeque::new();
+        let mut visited = Vec::<Node>::new();
+        let mut cost = 0;
+
+        for &node in sources {
+            let vertex = self.map.entry(node).or_default();
+            vertex.cost = 0;
+            vertex.parent = node;
+            queue.push_back(node)
+        }
+
+        while !queue.is_empty() {
+            let curr_node = queue.pop_front().expect("queue empty!");
+            let curr_cost = self.map.get(&curr_node).expect("no node!").cost;
+
+            for nb in &self.get_neighbours(curr_node) {
+                if !visited.contains(nb) && !nb.has_snake(turn) {
+                    let vertex = self.map.entry(*nb).or_default();
+                    vertex.parent = curr_node;
+                    vertex.cost = curr_cost + 1;
+                    queue.push_back(*nb);
+                }
+            }
+
+            visited.push(curr_node);
+            cost = curr_cost;
+        }
+
+        return cost as usize
     }
     
     pub fn path_to(&self, dest: &Node) -> Option<Vec<Node>> {
@@ -139,7 +178,7 @@ pub fn new_board() -> [[Node; 11]; 11] {
     return b
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 pub struct Vertex {
     pub cost: i32,
     pub parent: Node,

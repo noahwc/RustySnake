@@ -1,13 +1,9 @@
 use crate::node::Node;
 use crate::requests::Point;
-use std::collections::HashMap;
 use std::collections::BinaryHeap;
 
 pub struct Graph {
     pub board: [[Node; 11]; 11],
-    pub map: HashMap::<Node, Vertex>,
-    pub height: usize,
-    pub width: usize,
 }
 
 impl Graph {
@@ -15,9 +11,6 @@ impl Graph {
     pub fn new() -> Graph {
         Graph {
             board: new_board(),
-            map: HashMap::<Node, Vertex>::new(),
-            height: 11,
-            width: 11,
         }
     }
 
@@ -49,66 +42,35 @@ impl Graph {
         neighbours
     }   
 
-    impl Ord for Node {
-        fn cmp(&self, other: &Self) -> Ordering {
-            self.height.cmp(&other.height)
-        }
-    }
-    
-    impl PartialOrd for Node {
-        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-            Some(self.cmp(other))
-        }
-    }
-    
-    impl PartialEq for Node {
-        fn eq(&self, other: &Self) -> bool {
-            self.height == other.height
-        }
-    }
-
     pub fn djikstra2(&mut self, start: Node){
         let mut pq = BinaryHeap::new();
 
-        // TODO: write pq sorting
+        // initialize nodes
+        for node in self.board.iter_mut().flatten() {
+            node.cost = 128;
+            node.visited = false;
+        }
+        start.cost = 0;
 
-        let max_cost = 128; 
-        let start_cost = 1;      
-
-        // initialize map with a Vertex for each node on board and fills visited
-        self.map.clear()
-        for &n in self.board.iter().flat_map(|n| n.iter()) {
-            if n == start {
-                self.map.insert(n ,Vertex::new(n, start_cost, false));
-            }
-            else {
-                self.map.insert(n ,Vertex::new(n, max_cost, false));
-            }
-        };
-
+        // push start into pq
         pq.push(start);
 
         while !pq.is_empty(){
-             // take node with lowest cost
-             let curr_node = pq.pop();
-             let curr_vert = *self.map.get(&curr_node).unwrap();
+            // pop pq
+            let curr = pq.pop().expect("pq empty");
              
-             // update neighboor cost
-             for nb in &self.get_neighbours(curr_node) {
-                 if self.map.get(nb).visited == false {
-                     match self.map.get_mut(&nb) {
-                         Some(v) => {
-                             if v.cost > curr_vert.cost + nb.weight {
-                                    v.cost = curr_vert.cost + nb.weight;
-                                    v.parent = curr_node;
-                                    pq.push(nb)
-                             }
-                         },
-                         None => continue
-                     }
-                 }
-             }
-             self.map.get_mut(curr_node).visited = true;
+            // update neighbours and push into pq
+            for nb in self.get_neighbours(curr) {
+                if !nb.visited {
+                    let new_cost = curr.cost + nb.weight;
+                    if new_cost < nb.cost {
+                        nb.cost = new_cost;
+                    }
+                    pq.push(nb);
+                }
+            }
+            // mark curr_node as visited
+            curr.visited = true;
         } 
     }
     

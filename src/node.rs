@@ -1,16 +1,23 @@
 use crate::requests::{Turn, Point};
+use std::cmp::Ordering;
 
-#[derive(Debug, Copy, Clone, Default, Hash, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Default, Hash)]
 pub struct Node {
     pub point: Point,
-    pub weight: i32,
+    pub weight: i8,
+    pub cost: i8,
+    pub parent: Option<Point>,
+    pub visited: bool,
 }
 
 impl Node {
-    pub fn new(&p: &Point, w: i32) -> Node {
+    pub fn new(p: Point, w: i8) -> Node {
         Node {
             point: p,
             weight: w,
+            cost: 0,
+            parent: None,
+            visited: false,
         }
     }
 
@@ -28,3 +35,23 @@ impl Node {
         false
     }
 }
+
+impl Ord for Node {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.cost.cmp(&other.cost)
+    }
+}
+
+impl PartialOrd for Node {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Node {
+    fn eq(&self, other: &Self) -> bool {
+        self.cost == other.cost
+    }
+}
+
+impl Eq for Node {}

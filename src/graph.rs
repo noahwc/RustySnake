@@ -42,13 +42,14 @@ impl Graph {
         neighbours
     }   
 
-    pub fn djikstra2(&mut self, start: Node){
+    pub fn djikstra(&mut self, start: Node){
         let mut pq = BinaryHeap::new();
 
         // initialize nodes
         for node in self.board.iter_mut().flatten() {
             node.cost = 128;
             node.visited = false;
+            node.parent = None;
         }
         start.cost = 0;
 
@@ -65,6 +66,7 @@ impl Graph {
                     let new_cost = curr.cost + nb.weight;
                     if new_cost < nb.cost {
                         nb.cost = new_cost;
+                        nb.parent = Some(curr.point)
                     }
                     pq.push(nb);
                 }
@@ -77,17 +79,16 @@ impl Graph {
     pub fn path_to(&self, dest: Node) -> Option<Vec<Node>> {
         let mut path = Vec::<Node>::new();
         // traceback path
-        let mut n = dest;
+        let mut curr = dest;
         loop {
-            let v = self.map.get(&n).unwrap();
-            path.push(n);
-            if n != v.parent {
-                n = v.parent;
-            } else {
-                break
+            match curr.parent {
+                Some(parent) => {
+                    curr = self.get_node(parent).expect("no node!");
+                    path.push(curr);
+                },
+                None => break
             }
         }
-
         // return path encapsulated in Option
         if path.len() > 1 {
             path.reverse();
@@ -97,13 +98,13 @@ impl Graph {
         }
     }
 
-    pub fn get_node (&self, &p: &Point) -> Option<Node> {
-        for &n in self.board.iter().flat_map(|r| r.into_iter()) {
-            if n.point == p {
-                return Some(n)
-            }
+    pub fn get_node (&self, p: Point) -> Option<Node> {
+        if p.x < 11 && p.y < 11 {
+            Some(self.board[p.x][p.y])
+        } else {
+            None
         }
-        return None
+
     }
 }
 
@@ -113,26 +114,8 @@ pub fn new_board() -> [[Node; 11]; 11] {
     let mut b = [[Default::default(); 11]; 11]; 
     for j in 0..11 {
         for i in 0..11 {
-            b[i][j] = Node::new(&Point{x: i, y: j}, 0);
+            b[i][j] = Node::new(Point{x: i, y: j}, 0);
         }
     }
     return b
 }
-
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub struct Vertex {
-    pub cost: i32,
-    pub parent: Node,
-}
-
-impl Vertex {
-    pub fn new(parent: Node, cost: i32, visited: bool) -> Vertex {
-        Vertex {
-            cost,
-            parent,
-            visited
-        }
-    }
-}
-
-

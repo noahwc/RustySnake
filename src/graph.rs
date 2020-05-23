@@ -49,27 +49,44 @@ impl Graph {
         neighbours
     }   
 
+    impl Ord for Node {
+        fn cmp(&self, other: &Self) -> Ordering {
+            self.height.cmp(&other.height)
+        }
+    }
+    
+    impl PartialOrd for Node {
+        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+            Some(self.cmp(other))
+        }
+    }
+    
+    impl PartialEq for Node {
+        fn eq(&self, other: &Self) -> bool {
+            self.height == other.height
+        }
+    }
+
     pub fn djikstra2(&mut self, start: Node){
         let mut pq = BinaryHeap::new();
 
         // TODO: write pq sorting
 
-        let mut unvisited = Vec::new();
         let max_cost = 128; 
         let start_cost = 1;      
 
         // initialize map with a Vertex for each node on board and fills visited
+        self.map.clear()
         for &n in self.board.iter().flat_map(|n| n.iter()) {
             if n == start {
-                self.map.insert(n ,Vertex::new(n, start_cost));
+                self.map.insert(n ,Vertex::new(n, start_cost, false));
             }
             else {
-                self.map.insert(n ,Vertex::new(n, max_cost));
+                self.map.insert(n ,Vertex::new(n, max_cost, false));
             }
-            unvisited.push(n);
         };
 
-        pq.push(start)
+        pq.push(start);
 
         while !pq.is_empty(){
              // take node with lowest cost
@@ -78,65 +95,21 @@ impl Graph {
              
              // update neighboor cost
              for nb in &self.get_neighbours(curr_node) {
-                 if unvisited.contains(nb) {
+                 if self.map.get(nb).visited == false {
                      match self.map.get_mut(&nb) {
                          Some(v) => {
                              if v.cost > curr_vert.cost + nb.weight {
                                     v.cost = curr_vert.cost + nb.weight;
                                     v.parent = curr_node;
-                                    // TODO: push nodes to pq
+                                    pq.push(nb)
                              }
                          },
                          None => continue
                      }
                  }
              }
+             self.map.get_mut(curr_node).visited = true;
         } 
-    }
-
-    pub fn djikstra(&mut self, start: Node) {
-        let mut unvisited = Vec::new();
-        let max_cost = 128; 
-        let start_cost = 1;      
-
-        // initialize map with a Vertex for each node on board and fills visited
-        for &n in self.board.iter().flat_map(|n| n.iter()) {
-            if n == start {
-                self.map.insert(n ,Vertex::new(n, start_cost));
-            }
-            else {
-                self.map.insert(n ,Vertex::new(n, max_cost));
-            }
-            unvisited.push(n);
-        };
-
-        // while there are unvisited nodes
-        while !unvisited.is_empty() {
-            // sort unvisited nodes by cost
-            unvisited.sort_by(|a, b| {
-                self.map.get(a).unwrap().cost
-                .cmp(&self.map.get(b).unwrap().cost)
-            });
-
-            // take node with lowest cost
-            let curr_node = unvisited.remove(0);
-            let curr_vert = *self.map.get(&curr_node).unwrap();
-            
-            // update neighboor cost
-            for nb in &self.get_neighbours(curr_node) {
-                if unvisited.contains(nb) {
-                    match self.map.get_mut(&nb) {
-                        Some(v) => {
-                            if v.cost > curr_vert.cost + nb.weight {
-                                v.cost = curr_vert.cost + nb.weight;
-                                v.parent = curr_node;
-                            }
-                        },
-                        None => continue
-                    }
-                }
-            }
-        }
     }
     
     pub fn path_to(&self, dest: Node) -> Option<Vec<Node>> {
@@ -191,10 +164,11 @@ pub struct Vertex {
 }
 
 impl Vertex {
-    pub fn new(parent: Node, cost: i32) -> Vertex {
+    pub fn new(parent: Node, cost: i32, visited: bool) -> Vertex {
         Vertex {
             cost,
             parent,
+            visited
         }
     }
 }

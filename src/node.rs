@@ -4,14 +4,14 @@ use std::cmp::Ordering;
 #[derive(Debug, Copy, Clone, Default, Hash)]
 pub struct Node {
     pub point: Point,
-    pub weight: i8,
-    pub cost: i8,
+    pub weight: i32,
+    pub cost: i32,
     pub parent: Option<Point>,
     pub visited: bool,
 }
 
 impl Node {
-    pub fn new(p: Point, w: i8) -> Node {
+    pub fn new(p: Point, w: i32) -> Node {
         Node {
             point: p,
             weight: w,

@@ -4,6 +4,7 @@ use std::collections::BinaryHeap;
 
 pub struct Graph {
     pub board: [[Node; 11]; 11],
+    pub targets: Vec<Node>
 }
 
 impl Graph {
@@ -11,6 +12,7 @@ impl Graph {
     pub fn new() -> Graph {
         Graph {
             board: new_board(),
+            targets: Vec::new()
         }
     }
 
@@ -24,33 +26,34 @@ impl Graph {
         }
     }
 
-    pub fn get_neighbours(&self, n: Node) -> Vec<Node> {
+    pub fn get_neighbours(&self, n: Node) -> Vec<Point> {
         let mut neighbours = Vec::new();
         let x = n.point.x;
         let y = n.point.y;
 
         if x < 10 {
-            neighbours.push(self.board[x+1][y]);
+            neighbours.push(Point{x: x+1, y: y});
         }
         if x > 0 {
-            neighbours.push(self.board[x-1][y]);            
+            neighbours.push(Point{x: x-1, y: y});            
         }
         if y < 10 {
-            neighbours.push(self.board[x][y+1]);
+            neighbours.push(Point{x: x, y: y+1});
         }
         if y > 0 {
-            neighbours.push(self.board[x][y-1]);
+            neighbours.push(Point{x: x ,y: y-1});
         }
 
         neighbours
     }   
 
-    pub fn djikstra(&mut self, start: Node){
+    pub fn djikstra(&mut self, start: Point){
         let mut pq = BinaryHeap::new();
+        let mut start = self.board[start.x][start.y];
 
         // initialize nodes
         for node in self.board.iter_mut().flatten() {
-            node.cost = 128;
+            node.cost = 127;
             node.visited = false;
             node.parent = None;
         }
@@ -61,10 +64,11 @@ impl Graph {
 
         while !pq.is_empty(){
             // pop pq
-            let curr = pq.pop().expect("pq empty");
+            let mut curr = pq.pop().expect("pq empty");
              
             // update neighbours and push into pq
-            for nb in self.get_neighbours(curr) {
+            for point in self.get_neighbours(curr) {
+                let mut nb = self.board[point.x][point.y];
                 if !nb.visited {
                     let new_cost = curr.cost + nb.weight;
                     if new_cost < nb.cost {
@@ -85,8 +89,8 @@ impl Graph {
         let mut curr = dest;
         loop {
             match curr.parent {
-                Some(parent) => {
-                    curr = self.get_node(parent).expect("no node!");
+                Some(point) => {
+                    curr = self.board[point.x][point.y];
                     path.push(curr);
                 },
                 None => break
@@ -99,15 +103,6 @@ impl Graph {
         } else {
             return None
         }
-    }
-
-    pub fn get_node (&self, p: Point) -> Option<Node> {
-        if p.x < 11 && p.y < 11 {
-            Some(self.board[p.x][p.y])
-        } else {
-            None
-        }
-
     }
 }
 

@@ -36,9 +36,9 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     
     // PATHS //
     game.graph.weight_nodes(weighting_heuristic);
-    game.graph.djikstra(game.graph.get_node(&head).expect("no head in graph!"));
+    game.graph.djikstra(head);
     for n in &game.graph.targets {
-        match game.graph.path_to(n) {
+        match game.graph.path_to(*n) {
             Some(path) => paths.push(path),
             None => (),
         }

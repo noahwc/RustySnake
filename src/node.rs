@@ -42,7 +42,7 @@ impl Node {
 
 impl Ord for Node {
     fn cmp(&self, other: &Self) -> Ordering {
-        Reverse(self.cost.cmp(&other.cost))
+        self.cost.cmp(&other.cost).reverse()
     }
 }
 

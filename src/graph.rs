@@ -4,7 +4,7 @@ use std::collections::BinaryHeap;
 
 pub struct Graph {
     pub board: [[Node; 11]; 11],
-    pub targets: Vec<Node>
+    pub targets: Vec<Point>
 }
 
 impl Graph {
@@ -17,11 +17,11 @@ impl Graph {
     }
 
     // methods
-    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&Node) -> i32{
+    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&Node) -> i32 {
         for n in self.board.iter_mut().flat_map(|r| r.iter_mut()) {
             n.weight = heuristic(n);
             if n.weight < 0 {
-                self.targets.push(*n);
+                self.targets.push(n.point);
             }
         }
     }
@@ -64,22 +64,22 @@ impl Graph {
 
         while !pq.is_empty(){
             // pop pq
-            let mut curr = pq.pop().expect("pq empty");
+            let curr = pq.pop().expect("pq empty");
              
             // update neighbours and push into pq
             for point in self.get_neighbours(curr) {
-                let mut nb = self.board[point.x][point.y];
+                let mut nb = &mut self.board[point.x][point.y];
                 if !nb.visited {
                     let new_cost = curr.cost + nb.weight;
                     if new_cost < nb.cost {
                         nb.cost = new_cost;
                         nb.parent = Some(curr.point)
                     }
-                    pq.push(nb);
+                    pq.push(*nb);
                 }
             }
             // mark curr_node as visited
-            curr.visited = true;
+            self.board[curr.point.x][curr.point.y].visited = true;
         } 
     }
     

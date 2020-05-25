@@ -8,6 +8,7 @@ pub struct Node {
     pub cost: i32,
     pub parent: Option<Point>,
     pub visited: bool,
+    pub target: bool,
 }
 
 impl Node {
@@ -18,6 +19,7 @@ impl Node {
             cost: 0,
             parent: None,
             visited: false,
+            target: false,
         }
     }
 
@@ -40,15 +42,17 @@ impl Node {
     }
 }
 
+// Ordering is reversed to produce min heap
+
 impl Ord for Node {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.cost.cmp(&other.cost)
+        other.cost.cmp(&self.cost)
     }
 }
 
 impl PartialOrd for Node {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+        Some(other.cmp(&self))
     }
 }
 

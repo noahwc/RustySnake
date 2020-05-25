@@ -17,10 +17,10 @@ impl Graph {
     }
 
     // methods
-    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&Node) -> i32 {
+    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&mut Node) -> i32 {
         for n in self.board.iter_mut().flat_map(|r| r.iter_mut()) {
             n.weight = heuristic(n);
-            if n.weight < 0 {
+            if n.target {
                 self.targets.push(n.point);
             }
         }
@@ -49,18 +49,20 @@ impl Graph {
 
     pub fn djikstra(&mut self, start: Point){
         let mut pq = BinaryHeap::new();
-        let mut start = self.board[start.x][start.y];
 
         // initialize nodes
         for node in self.board.iter_mut().flatten() {
-            node.cost = 127;
-            node.visited = false;
-            node.parent = None;
+            if node.point == start {
+                node.cost = 0;
+            } else {
+                node.cost = 1024;
+                node.visited = false;
+                node.parent = None;
+            }
         }
-        start.cost = 0;
 
         // push start into pq
-        pq.push(start);
+        pq.push(self.board[start.x][start.y]);
 
         while !pq.is_empty(){
             // pop pq
@@ -87,6 +89,7 @@ impl Graph {
         let mut path = Vec::<Node>::new();
         // traceback path
         let mut curr = dest;
+        path.push(curr);
         loop {
             match curr.parent {
                 Some(point) => {

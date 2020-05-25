@@ -26,14 +26,14 @@ fn start() {
 #[test]
 fn movement() {
     // set game id and turn here
-    let game_id = "8db87231-0bfd-4131-9061-131d3c394cd0";
-    let turn: usize = 1;
+    let game_id = "683c19c0-2d90-488d-abe3-2d0fbb6ef4cb";
+    let turn: usize = 0;
 
     let mut f = File::open(format!("./logs/{}.txt", game_id)).expect("failed to open file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");
     let turns: Vec<&str> = buffer.lines().collect();
-    let turn_data = turns[turn-1];
+    let turn_data = turns[turn];
 
     let client = Client::new(rocket()).expect("Failed to create client instance");
     let mut response = client

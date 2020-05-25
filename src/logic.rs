@@ -5,30 +5,23 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     let mut game = game::Game::new(&turn); // new game instance
     let mut paths = Vec::new();
     let head = *turn.you.body.first().expect("no head!");
-    let tail = *turn.you.body.last().expect("no tail!");
-
     
     // EARLY GAME //
     let empty_weight = 1;
-    let snake_weight = 122;
-    let food_weight = -15;
-    let tail_weight = -3;
+    let snake_weight = 127;
     let head_weight = 0;
     
-    let weighting_heuristic = |n: &node::Node| -> i32 {
+    let weighting_heuristic = |n: &mut node::Node| -> i32 {
         if n.has_snake(&turn) {
             if n.point == head {
                 return head_weight
-            } if n.point == tail && !n.stacked(&turn) {
-                return tail_weight
             } else {
                 return snake_weight
             }
         } if n.has_food(&turn) {
-            return food_weight
-        } else {
-            return empty_weight
+            n.target = true;
         }
+        return empty_weight
     };
     // MID GAME //
 
@@ -44,12 +37,12 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
             None => (),
         }
     }
-    paths.sort_by(|a,b| cost(a).cmp(&cost(b)));
+    paths.sort_by(|a,b| weight(a).cmp(&weight(b)));
     // ADD FLOOD FILL CHECK HERE //
     if paths.is_empty() {
         return responses::Move::new(responses::Direction::Right)   // return default direction
     } else {
-        println!("{:?}", paths.first().expect("no path in paths!"));
+        println!("{:#?}", paths.first().expect("no path in paths!").last().expect("no node in path")); 
         return responses::Move::new(get_direction(paths.first().expect("no path in paths!")))
     }
 
@@ -69,7 +62,7 @@ fn get_direction(path: &Vec<node::Node>) -> responses::Direction {
     }
 }
 
-pub fn cost(v: &Vec<node::Node>) -> i32 {
+pub fn weight(v: &Vec<node::Node>) -> i32 {
     let mut sum: i32 = 0;
     v.iter().for_each(|n| sum += n.weight);
     sum

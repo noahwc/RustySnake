@@ -46,13 +46,13 @@ impl Node {
 
 impl Ord for Node {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.cost.cmp(&other.cost).reverse()
+        other.cost.cmp(&self.cost)
     }
 }
 
 impl PartialOrd for Node {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(other.cmp(&self))
+        other.weight.partial_cmp(&self.weight)
     }
 }
 

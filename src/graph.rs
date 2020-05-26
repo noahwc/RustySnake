@@ -30,7 +30,6 @@ impl Graph {
         let mut neighbours = Vec::new();
         let x = n.point.x;
         let y = n.point.y;
-
         if x < 10 {
             neighbours.push(Point{x: x+1, y: y});
         }
@@ -43,7 +42,6 @@ impl Graph {
         if y > 0 {
             neighbours.push(Point{x: x ,y: y-1});
         }
-
         neighbours
     }   
 

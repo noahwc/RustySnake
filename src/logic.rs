@@ -42,7 +42,7 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     if paths.is_empty() {
         return responses::Move::new(responses::Direction::Right)   // return default direction
     } else {
-        // println!("{:#?}", paths.first().expect("no path in paths!").last().expect("no node in path")); 
+        //println!("{:#?}", paths.first().expect("no path in paths!")); 
         return responses::Move::new(get_direction(paths.first().expect("no path in paths!")))
     }
 

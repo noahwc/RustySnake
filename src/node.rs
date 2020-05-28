@@ -52,7 +52,7 @@ impl Ord for Node {
 
 impl PartialOrd for Node {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        other.weight.partial_cmp(&self.weight)
+        other.cost.partial_cmp(&self.cost)
     }
 }
 

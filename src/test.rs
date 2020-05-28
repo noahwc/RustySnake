@@ -25,11 +25,10 @@ fn start() {
 
 #[test]
 fn movement() {
-    // set game id and turn here
-    let game_id = "876e077e-02e2-4047-8532-1b1524c10b6f";
-    let turn: usize = 266;
+    // set turn here
+    let turn: usize = 0;
 
-    let mut f = File::open(format!("./logs/{}.txt", game_id)).expect("failed to open file");
+    let mut f = File::open(format!("./log.txt")).expect("failed to open file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");
     let turns: Vec<&str> = buffer.lines().collect();
@@ -51,10 +50,9 @@ fn movement() {
 #[test]
 fn end() {
     // set game id and turn here
-    let game_id = "19f1c9ea-c539-49eb-a09d-39647c3043de";
     let turn: usize = 64;
 
-    let mut f = File::open(format!("./logs/{}.txt", game_id)).expect("failed to open file");
+    let mut f = File::open(format!("./log.txt")).expect("failed to open file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");
     let turns: Vec<&str> = buffer.lines().collect();

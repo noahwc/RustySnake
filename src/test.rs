@@ -1,9 +1,36 @@
 use super::rocket;
-use crate::responses;
+use crate::{responses, logic, requests};
 use rocket::http::{ContentType, Status};
 use rocket::local::Client;
 use std::fs::File;
 use std::io::Read;
+
+#[test]
+fn get_move() {
+    let turn: usize = 0;
+    let mut f = File::open(format!("./log.txt")).expect("failed to open file");
+    let mut buffer = String::new();
+    f.read_to_string(&mut buffer).expect("failed to read file");
+    let turns: Vec<&str> = buffer.lines().collect();
+    let turn_data = turns[turn];
+    let result: serde_json::Result<requests::Turn> = serde_json::from_str(turn_data);
+    match result {
+        Err(e) => { 
+            println!("failed to parse turn_data: {}", e);
+            assert!(false)
+        },
+        Ok(t) => {
+            match logic::get_move(t) {
+                Some(m) => { 
+                    println!("{:?}",m);
+                    assert!(true)
+                },
+                None => assert!(false),
+            }
+        }
+    }
+
+}
 
 #[test]
 fn ping() {
@@ -25,11 +52,10 @@ fn start() {
 
 #[test]
 fn movement() {
-    // set game id and turn here
-    let game_id = "4ff11f4a-bc02-454c-83c4-a76e92211103";
+    // set turn here
     let turn: usize = 10;
 
-    let mut f = File::open(format!("./logs/{}.txt", game_id)).expect("failed to open file");
+    let mut f = File::open(format!("./log.txt")).expect("failed to open file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");
     let turns: Vec<&str> = buffer.lines().collect();
@@ -51,10 +77,9 @@ fn movement() {
 #[test]
 fn end() {
     // set game id and turn here
-    let game_id = "19f1c9ea-c539-49eb-a09d-39647c3043de";
     let turn: usize = 64;
 
-    let mut f = File::open(format!("./logs/{}.txt", game_id)).expect("failed to open file");
+    let mut f = File::open(format!("./log.txt")).expect("failed to open file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");
     let turns: Vec<&str> = buffer.lines().collect();

@@ -1,6 +1,6 @@
 use crate::{responses, requests, game, node};
 
-pub fn get_move (turn: requests::Turn) -> responses::Move {
+pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
     // PREREQS //
     let mut game = game::Game::new(&turn); // new game instance
     let mut paths = Vec::new();
@@ -46,9 +46,9 @@ pub fn get_move (turn: requests::Turn) -> responses::Move {
     paths.sort_by(|a,b| cost(a).cmp(&cost(b)));
     // ADD FLOOD FILL CHECK HERE //
     if paths.is_empty() {
-        return responses::Move::new(responses::Direction::Up)   // return default direction
+        None
     } else {
-        return responses::Move::new(get_direction(paths.first().expect("no path in paths!")))
+        Some(responses::Move::new(get_direction(paths.first().expect("no path in paths!"))))
     }
 
 }

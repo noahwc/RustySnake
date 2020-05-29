@@ -28,6 +28,7 @@ fn index() -> &'static str {
 
 #[post("/start")]
 fn start() -> Json<responses::Start> {
+    logging::clear();
     Json(responses::Start::new(
         "#CE3D16".to_string(),
         responses::HeadType::Regular,
@@ -38,12 +39,14 @@ fn start() -> Json<responses::Start> {
 #[post("/move", format = "json", data = "<req>")]
 fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
     logging::log(&req);
-    Json(logic::get_move(req.into_inner()))
+    match logic::get_move(req.into_inner()) {
+        Some(m) => Json(m),
+        None => Json(responses::Move::new(responses::Direction::Right))
+    }
 }
 
-#[post("/end", format = "json", data = "<req>")]
-fn end(req: Json<requests::Turn>) -> &'static str {
-    println!("GAME ID: {}", req.into_inner().game.id);
+#[post("/end")]
+fn end() -> &'static str {
     "Thanks for the game"
 }
 

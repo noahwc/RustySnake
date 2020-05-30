@@ -19,10 +19,11 @@ impl Graph {
     }
 
     // methods
-    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&Node) -> i32{
+    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(&Node) -> (i32, bool){
         for n in self.board.iter_mut().flat_map(|r| r.iter_mut()) {
-            n.weight = heuristic(n);
-            if n.weight < 0 {
+            let (weight, target) = heuristic(n);
+            n.weight = weight;
+            if target {
                 self.targets.push(*n);
             }
         }

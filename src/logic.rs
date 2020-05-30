@@ -5,30 +5,24 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
     let mut game = game::Game::new(&turn); // new game instance
     let mut paths = Vec::new();
     let head = *turn.you.body.first().expect("no head!");
-    let tail = *turn.you.body.last().expect("no tail!");
 
     
     // EARLY GAME //
     let empty_weight = 1;
     let snake_weight = 122;
-    let food_weight = -15;
-    let tail_weight = -3;
     let head_weight = 0;
     
-    let weighting_heuristic = |n: &node::Node| -> i32 {
+    let weighting_heuristic = |n: &node::Node| -> (i32, bool) {
         if n.has_snake(&turn) {
             if n.point == head {
-                return head_weight
-            } if n.point == tail && !n.stacked(&turn) {
-                return tail_weight
+                return (head_weight, false)
             } else {
-                return snake_weight
+                return (snake_weight, false)
             }
         } if n.has_food(&turn) {
-            return food_weight
-        } else {
-            return empty_weight
+            return (empty_weight, true)
         }
+        (empty_weight, false)
     };
     // MID GAME //
 

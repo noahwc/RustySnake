@@ -1,10 +1,10 @@
-use crate::{responses, requests, game, node};
+use crate::{responses, requests, node, graph};
 
 pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
     // PREREQS //
-    let mut game = game::Game::new(&turn); // new game instance
+    let mut graph = graph::Graph::new(&turn);
     let mut paths = Vec::new();
-    let head = *turn.you.body.first().expect("no head!");
+    let head = turn.you.body.first().expect("no head!");
 
     
     // EARLY GAME //
@@ -12,9 +12,9 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
     let snake_weight = 122;
     let head_weight = 0;
     
-    let weighting_heuristic = |n: &node::Node| -> (i32, bool) {
+    let weighting_heuristic = |n: node::Node| -> (i32, bool) {
         if n.has_snake(&turn) {
-            if n.point == head {
+            if n.point == *head {
                 return (head_weight, false)
             } else {
                 return (snake_weight, false)
@@ -24,21 +24,19 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
         }
         (empty_weight, false)
     };
-    // MID GAME //
-
-    // LATE GAME //
     
     // PATHS //
-    game.graph.weight_nodes(weighting_heuristic);
-    game.graph.djikstra(game.graph.get_node(&head).expect("no head in graph!"));
-    for n in &game.graph.targets {
-        match game.graph.path_to(n) {
-            Some(path) => paths.push(path),
-            None => (),
-        }
+    graph.weight_nodes(weighting_heuristic);
+    graph.djikstra(head);
+
+    for point in &graph.targets {
+        paths.push(graph.path_to(point))
     }
+
     paths.sort_by(|a,b| cost(a).cmp(&cost(b)));
+
     // ADD FLOOD FILL CHECK HERE //
+    
     if paths.is_empty() {
         None
     } else {

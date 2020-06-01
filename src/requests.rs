@@ -5,6 +5,11 @@ pub struct Point {
     pub x: usize,
     pub y: usize,
 }
+impl Point {
+    pub fn index(&self, width: usize) -> usize {
+        width * self.y + self.x
+    }
+}
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Turn {

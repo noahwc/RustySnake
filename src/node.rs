@@ -4,13 +4,19 @@ use crate::requests::{Turn, Point};
 pub struct Node {
     pub point: Point,
     pub weight: i32,
+    pub cost: i32,
+    pub parent: Option<Point>,
+    pub visited: bool
 }
 
 impl Node {
-    pub fn new(&p: &Point, w: i32) -> Node {
+    pub fn new(p: Point) -> Node {
         Node {
             point: p,
-            weight: w,
+            weight: 0,
+            cost: 9999,
+            parent: None,
+            visited: false
         }
     }
 

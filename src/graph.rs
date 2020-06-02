@@ -1,5 +1,6 @@
 use crate::node::Node;
 use crate::requests::{Point, Turn};
+use std::collections::VecDeque;
 
 pub struct Graph {
     pub width: usize,
@@ -51,7 +52,46 @@ impl Graph {
         }
 
         adj
-    }   
+    }
+
+    pub fn flood_fill(&self){
+
+        let results: [[i8; 11]; 11];
+        let mut deq = VecDeque::new();
+
+        // init dequeue
+        
+        for n in &mut self.board {
+            match n.point{
+                Point { x, y: 0 } | Point { x: 0, y } => {
+                        results[n.point.x][n.point.y] = 12;
+                        for adj in self.neighbours(n.point) {
+                            deq.push_back(adj);
+                        }
+                }
+                _ =>{
+                        results[n.point.x][n.point.y] = 0;
+                        continue;
+                }
+            }
+            if(n.has_snake(&turn)){
+                results[n.point.x][n.point.y] = 13;
+            }
+            for adj in self.neighbours(n.point) {
+                deq.push_back(adj);
+            }
+        }
+
+        while(curr = deq.pop_front()){
+            let max = 0;
+            for {
+                // loop thru neighbours, keep track of max score, push neighbours with scores of 0 onto deq.
+            }
+            // assign current node to max score
+        }
+
+        // map the results array back onto node weights (probably). This should take O(N) time.
+    }
 
     pub fn djikstra(&mut self, start: &Point) {
         let w = self.width;

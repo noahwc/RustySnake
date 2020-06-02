@@ -97,6 +97,7 @@ impl Graph {
                 None => break
             }
         }
+        path.reverse();
         path
     }
 

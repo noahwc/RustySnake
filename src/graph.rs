@@ -1,8 +1,10 @@
 use crate::node::Node;
 use crate::requests::{Point, Turn};
+use std::collections::VecDeque;
 
 pub struct Graph {
     pub width: usize,
+    pub height: usize,
     pub board: Vec<Node>,
     pub targets: Vec<Point>,
 }
@@ -17,8 +19,10 @@ impl Graph {
                 board.insert(turn.board.width * row + col, Node::new(Point {x: col, y: row}));
             }
         }
+        
         Graph {
             width: turn.board.width,
+            height: turn.board.height,
             board: board, 
             targets: Vec::new(),
         }
@@ -53,10 +57,11 @@ impl Graph {
         adj
     }   
 
-    pub fn djikstra(&mut self, start: &Point) {
+    pub fn djikstra(&mut self) {
         let w = self.width;
+        let &start = self.board.iter().find(|&node| node.has_head).unwrap();
         // set start cost to 0 
-        self.board[start.index(w)].cost = 0;
+        self.board[start.point.index(w)].cost = 0;
         // fill unvisited
         let mut unvisited: Vec<Point> = self.board.iter().map(|node| node.point).collect();
 
@@ -99,6 +104,32 @@ impl Graph {
         }
         path.reverse();
         path
+    }
+
+    pub fn foodsafe(&mut self, source: &Point, len: usize) -> bool {
+        let cc_size = 0;
+        let queue = VecDeque::new();
+
+        for node in self.board.iter_mut() {
+            node.visited = false
+        }
+
+        queue.push_back(*source);
+
+        while !queue.is_empty() {
+            let curr = self.board[queue.pop_front().unwrap().index(self.width)];
+            if cc_size > len || curr.has_tail {
+                return true
+            }
+            if !curr.visited && !curr.has_snake{
+                curr.visited = true;
+                cc_size += 1;
+                for point in self.neighbours(curr.point) {
+                    queue.push_back(point)
+                }
+            }
+        }
+        false
     }
 
 }

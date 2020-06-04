@@ -6,7 +6,11 @@ pub struct Node {
     pub weight: i32,
     pub cost: i32,
     pub parent: Option<Point>,
-    pub visited: bool
+    pub visited: bool,
+    pub has_snake: bool,
+    pub has_food: bool,
+    pub has_head: bool,
+    pub has_tail: bool,
 }
 
 impl Node {
@@ -16,19 +20,12 @@ impl Node {
             weight: 0,
             cost: 9999,
             parent: None,
-            visited: false
+            visited: false,
+            has_snake: false,
+            has_food: false,
+            has_head: false,
+            has_tail: false,
         }
-    }
-
-    pub fn has_food(&self, t: &Turn) -> bool {
-        t.board.food.iter().any(|&n| self.point == n)
-    }
-
-    pub fn has_snake(&self, t: &Turn) -> bool {
-        for snake in &t.board.snakes {
-            return snake.body.iter().any(|&p| p == self.point)
-        }
-        false
     }
 
     pub fn stacked(&self, t: &Turn) -> bool {

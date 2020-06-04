@@ -40,8 +40,8 @@ fn start() -> Json<responses::Start> {
 fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
     logging::log(&req);
     match logic::get_move(req.into_inner()) {
-        Some(m) => Json(m),
-        None => Json(responses::Move::new(responses::Direction::Right))
+        Some(m) => return Json(m),
+        None => return Json(responses::Move::new(responses::Direction::Right))
     }
 }
 

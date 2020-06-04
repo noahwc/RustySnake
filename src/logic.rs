@@ -5,8 +5,8 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
     let mut graph = graph::Graph::new(&turn);
     let mut paths = Vec::new();
     // refactor into board constructor?
-    graph.board[turn.you.body.first().unwrap().index(graph.width)];
-    graph.board[turn.you.body.last().unwrap().index(graph.width)];
+    graph.board[turn.you.body.first().unwrap().index(graph.width)].has_head = true;
+    graph.board[turn.you.body.last().unwrap().index(graph.width)].has_tail = true;
  
     for snake in turn.board.snakes {
         for point in snake.body {
@@ -46,14 +46,12 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
 
     paths.sort_by(|a,b| cost(a).cmp(&cost(b)));
 
-    // ADD FLOOD FILL CHECK HERE //
-    
-    if paths.is_empty() {
-        None
-    } else {
-        Some(responses::Move::new(get_direction(paths.first().expect("no path in paths!"))))
+    for path in &paths {
+        if graph.foodsafe(path, turn.you.body.len()) {
+            return Some(responses::Move::new(get_direction(path)))
+        }
     }
-
+    return None
 }
 
 fn get_direction(path: &Vec<node::Node>) -> responses::Direction {

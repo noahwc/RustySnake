@@ -1,6 +1,6 @@
 use crate::node::Node;
 use crate::requests::{Point, Turn};
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 
 pub struct Graph {
     pub width: usize,
@@ -59,7 +59,7 @@ impl Graph {
 
     pub fn djikstra(&mut self) {
         let w = self.width;
-        let &start = self.board.iter().find(|&node| node.has_head).unwrap();
+        let start = *self.board.iter().find(|&&node| node.has_head).unwrap();
         // set start cost to 0 
         self.board[start.point.index(w)].cost = 0;
         // fill unvisited
@@ -106,26 +106,30 @@ impl Graph {
         path
     }
 
-    pub fn foodsafe(&mut self, source: &Point, len: usize) -> bool {
-        let cc_size = 0;
-        let queue = VecDeque::new();
+    pub fn foodsafe(&self, path: &Vec<Node>, len: usize) -> bool {
+        let source = path.last().unwrap().point;
+        let mut cc_size = 0;
+        let mut queue = VecDeque::new();
+        let mut visited = HashSet::<Point>::with_capacity(self.height*self.width);
 
-        for node in self.board.iter_mut() {
-            node.visited = false
-        }
-
-        queue.push_back(*source);
+        queue.push_back(source);
 
         while !queue.is_empty() {
             let curr = self.board[queue.pop_front().unwrap().index(self.width)];
             if cc_size > len || curr.has_tail {
+                //println!{"target: {:?}\ncc_size: {}\nlen: {}\nhas_tail: {}\n", source, cc_size, len, curr.has_tail};
                 return true
             }
-            if !curr.visited && !curr.has_snake{
-                curr.visited = true;
-                cc_size += 1;
-                for point in self.neighbours(curr.point) {
-                    queue.push_back(point)
+            match visited.get(&curr.point) {
+                Some(_p) => continue,
+                None => {
+                    if !curr.has_snake {
+                        cc_size += 1;
+                        for point in self.neighbours(curr.point) {
+                        queue.push_back(point)
+                        }
+                    }
+                    visited.insert(curr.point);
                 }
             }
         }

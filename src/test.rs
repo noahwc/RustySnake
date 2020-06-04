@@ -7,7 +7,7 @@ use std::io::Read;
 
 #[test]
 fn get_move() {
-    let turn: usize = 0;
+    let turn: usize = 133;
     let mut f = File::open(format!("./log.txt")).expect("failed to open file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");

@@ -1,6 +1,6 @@
-use crate::node::Node;
-use crate::requests::{Point, Turn};
-use std::collections::{HashSet, VecDeque};
+use crate::node::*;
+use crate::requests::*;
+use std::collections::*;
 
 pub struct Graph {
     pub width: usize,
@@ -10,7 +10,6 @@ pub struct Graph {
 }
 
 impl Graph {
-    // constructor
     pub fn new(turn: &Turn) -> Graph {
         // row-major order
         let mut board = Vec::with_capacity(turn.board.width * turn.board.height);
@@ -28,7 +27,6 @@ impl Graph {
         }
     }
 
-    // methods
     pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(Node) -> (i32, bool){
         for n in &mut self.board {
             let (weight, target) = heuristic(*n);
@@ -60,14 +58,16 @@ impl Graph {
     pub fn djikstra(&mut self) {
         let w = self.width;
         let start = *self.board.iter().find(|&&node| node.has_head).unwrap();
-        // set start cost to 0 
         self.board[start.point.index(w)].cost = 0;
-        // fill unvisited
-        let mut unvisited: Vec<Point> = self.board.iter().map(|node| node.point).collect();
+        let mut unvisited = HashSet::new();
+        for node in &self.board {
+            unvisited.insert(node.point);
+        }
+        unvisited.shrink_to_fit();
 
         while !unvisited.is_empty() {
             // get cheapest node
-            let mut curr = unvisited[0];
+            let mut curr = *unvisited.iter().nth(0).unwrap();
             let mut curr_cost = self.board[curr.index(w)].cost;
             for point in &unvisited {
                 let point_cost = self.board[point.index(w)].cost;  
@@ -79,16 +79,14 @@ impl Graph {
             // update neighbours cost and parent
             for adj in self.neighbours(curr) {
                 let adj_node = self.board.get_mut(adj.index(w)).unwrap();
-                if !adj_node.visited {
+                if unvisited.contains(&adj) {
                     if curr_cost + adj_node.weight < adj_node.cost {
                         adj_node.cost = curr_cost + adj_node.weight;
                         adj_node.parent = Some(curr);
                     }
                 }
             }
-            // mark curr as visited and remove from unvisited
-            self.board[curr.index(w)].visited = true;
-            unvisited.retain(|&point| point != curr);
+            unvisited.remove(&curr);
         }
     }
     
@@ -106,7 +104,7 @@ impl Graph {
         path
     }
 
-    pub fn foodsafe(&self, path: &Vec<Node>, len: usize) -> bool {
+    pub fn safe(&self, path: &Vec<Node>, len: usize) -> bool {
         let source = path.last().unwrap().point;
         let mut cc_size = 0;
         let mut queue = VecDeque::new();
@@ -117,7 +115,6 @@ impl Graph {
         while !queue.is_empty() {
             let curr = self.board[queue.pop_front().unwrap().index(self.width)];
             if cc_size > len || curr.has_tail {
-                //println!{"target: {:?}\ncc_size: {}\nlen: {}\nhas_tail: {}\n", source, cc_size, len, curr.has_tail};
                 return true
             }
             match visited.get(&curr.point) {

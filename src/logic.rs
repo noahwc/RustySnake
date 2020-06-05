@@ -1,7 +1,6 @@
 use crate::{responses, requests, node, graph};
 
 pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
-    // PREREQS //
     let mut graph = graph::Graph::new(&turn);
     let mut paths = Vec::new();
     // refactor into board constructor?
@@ -16,9 +15,7 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
     for point in turn.board.food {
         graph.board[point.index(graph.width)].has_food = true
     } 
-    //
-    
-    // EARLY GAME //
+
     let empty_weight = 1;
     let snake_weight = 122;
     let head_weight = 0;
@@ -36,7 +33,6 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
         (empty_weight, false)
     };
     
-    // PATHS //
     graph.weight_nodes(weighting_heuristic);
     graph.djikstra();
 
@@ -47,7 +43,7 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
     paths.sort_by(|a,b| cost(a).cmp(&cost(b)));
 
     for path in &paths {
-        if graph.foodsafe(path, turn.you.body.len()) {
+        if graph.safe(path, turn.you.body.len()) {
             return Some(responses::Move::new(get_direction(path)))
         }
     }

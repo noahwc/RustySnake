@@ -2,5 +2,5 @@
 /target/
 **/*.rs.bk
 *.code-workspace
-log.txt
-*.vscode
+*.txt
+*.vscode/

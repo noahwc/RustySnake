@@ -43,7 +43,7 @@ pub fn get_move (turn: requests::Turn) -> Option<responses::Move> {
     paths.sort_by(|a,b| cost(a).cmp(&cost(b)));
 
     for path in &paths {
-        if graph.safe(path, turn.you.body.len()) {
+        if graph.is_safe(path, turn.you.body.len()) {
             return Some(responses::Move::new(get_direction(path)))
         }
     }

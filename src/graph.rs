@@ -13,8 +13,8 @@ impl Graph {
     pub fn new(turn: &Turn) -> Graph {
         // row-major order
         let mut board = Vec::with_capacity(turn.board.width * turn.board.height);
-        for row in 0..turn.board.width {
-            for col in 0..turn.board.height {
+        for row in 0..turn.board.height {
+            for col in 0..turn.board.width {
                 board.insert(turn.board.width * row + col, Node::new(Point {x: col, y: row}));
             }
         }
@@ -104,33 +104,45 @@ impl Graph {
         path
     }
 
-    pub fn safe(&self, path: &Vec<Node>, len: usize) -> bool {
-        let source = path.last().unwrap().point;
-        let mut cc_size = 0;
+    pub fn connected_component(&self, source: Point) -> Vec<Node> {
+        let mut cc = Vec::new();
         let mut queue = VecDeque::new();
         let mut visited = HashSet::<Point>::with_capacity(self.height*self.width);
-
         queue.push_back(source);
-
+        
         while !queue.is_empty() {
             let curr = self.board[queue.pop_front().unwrap().index(self.width)];
-            if cc_size > len || curr.has_tail {
-                return true
-            }
             match visited.get(&curr.point) {
                 Some(_p) => continue,
                 None => {
-                    if !curr.has_snake {
-                        cc_size += 1;
+                    if !curr.has_snake || curr.has_tail{
+                        cc.push(curr);
                         for point in self.neighbours(curr.point) {
-                        queue.push_back(point)
+                            queue.push_back(point)
                         }
                     }
                     visited.insert(curr.point);
                 }
             }
         }
-        false
+
+        return cc
     }
 
+    pub fn is_safe(&self, path: &Vec<Node>, len: usize) -> bool {
+        let source = path.last().unwrap().point;
+        let cc = self.connected_component(source);
+
+        if len < cc.len() {
+            return true
+        }
+        
+        for node in cc {
+            if node.has_tail {
+                return true
+            }
+        }
+
+        return false
+    }
 }

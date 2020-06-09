@@ -1,12 +1,13 @@
-use crate::node::*;
-use crate::requests::*;
+use super::node::*;
+use super::requests::*;
 use std::collections::*;
+use std::cmp::Ordering;
+
 
 pub struct Graph {
     pub width: usize,
     pub height: usize,
     pub board: Vec<Node>,
-    pub targets: Vec<Point>,
 }
 
 impl Graph {
@@ -23,87 +24,90 @@ impl Graph {
             width: turn.board.width,
             height: turn.board.height,
             board: board, 
-            targets: Vec::new(),
         }
     }
 
-    pub fn weight_nodes<F>(&mut self, heuristic: F) where F: Fn(Node) -> (i32, bool){
+    pub fn index(&self, point: &Point) -> usize {
+        self.width * point.y + point.x
+    }
+
+    pub fn weight_nodes<F>(&mut self, heuristic: F) -> Vec<Node> where F: Fn(Node) -> (i32, bool){
+        let mut targets = Vec::new();
         for n in &mut self.board {
             let (weight, target) = heuristic(*n);
             n.weight = weight;
             if target {
-                self.targets.push(n.point)
+                targets.push(*n)
             }
         }
+        targets
     }
 
-    pub fn neighbours(&self, point: Point) -> Vec<Point> {
-        let x = point.x;
-        let y = point.y;
+    pub fn neighbours(&self, source: &Node) -> Vec<Node> {
+        let x = source.point.x;
+        let y = source.point.y;
         let mut adj = Vec::new();
         
         if x > 0 {
-            adj.push(Point {x: x-1, y: y});
+            adj.push( self.board[ self.index( &Point { x: x - 1, y: y } ) ] )
         } if x < 10 {
-            adj.push(Point {x: x+1, y: y});
+            adj.push( self.board[ self.index( &Point { x: x + 1, y: y } ) ] )
         } if y > 0 {
-            adj.push(Point {x: x, y: y-1})
+            adj.push( self.board[ self.index( &Point { x: x, y: y - 1 } ) ] )
         } if y < 10 {
-            adj.push(Point {x: x, y: y+1})
+            adj.push( self.board[ self.index( &Point { x: x, y: y + 1 } ) ] )
         }
 
         adj
     }   
 
-    pub fn djikstra(&mut self) {
-        let w = self.width;
-        let start = *self.board.iter().find(|&&node| node.has_head).unwrap();
-        self.board[start.point.index(w)].cost = 0;
-        let mut unvisited = HashSet::new();
-        for node in &self.board {
-            unvisited.insert(node.point);
+    pub fn djikstra(&self, source: &Node, targets: &Vec<Node>) -> Vec<Vec<Node>> {
+        let mut vertices = Vec::new();
+        for n in &self.board {
+            vertices.push(
+                Vertex {
+                    node: n,
+                    cost: 9999,
+                    parent: None
+                }
+            )
         }
-        unvisited.shrink_to_fit();
+        vertices[self.index(&source.point)].cost = 0;
+        
+        let mut pq = BinaryHeap::new();
+        pq.push(&vertices[self.index(&source.point)]);
 
-        while !unvisited.is_empty() {
-            // get cheapest node
-            let mut curr = *unvisited.iter().nth(0).unwrap();
-            let mut curr_cost = self.board[curr.index(w)].cost;
-            for point in &unvisited {
-                let point_cost = self.board[point.index(w)].cost;  
-                if point_cost < curr_cost {
-                    curr = *point;
-                    curr_cost = point_cost;
+        while !pq.is_empty() {
+            let curr_vertex = pq.pop().unwrap();
+
+            for node in self.neighbours(&curr_vertex.node) {
+                let nb_vertex = &mut vertices[self.index(&node.point)];
+        
+                if nb_vertex.cost > curr_vertex.cost + curr_vertex.node.weight {
+                    nb_vertex.cost = curr_vertex.cost + curr_vertex.node.weight;
+                    pq.push(&vertices[self.index(&node.point)]);
+                }
+
+            }
+
+        }
+        
+        let paths = Vec::new();
+        for &target in targets {
+            let path = vec![target];
+            loop {
+                let curr_vertex = &vertices[self.index(&path.last().unwrap().point)];
+                match curr_vertex.parent {
+                    Some(node) => path.push(*curr_vertex.node),
+                    None => break
                 }
             }
-            // update neighbours cost and parent
-            for adj in self.neighbours(curr) {
-                let adj_node = self.board.get_mut(adj.index(w)).unwrap();
-                if unvisited.contains(&adj) {
-                    if curr_cost + adj_node.weight < adj_node.cost {
-                        adj_node.cost = curr_cost + adj_node.weight;
-                        adj_node.parent = Some(curr);
-                    }
-                }
-            }
-            unvisited.remove(&curr);
+            path.reverse();
+            paths.push(path);
         }
-    }
-    
-    pub fn path_to(&self, dest: &Point) -> Vec<Node> {
-        let w = self.width;
-        let mut path = vec![self.board[dest.index(w)]];
-        loop {
-            let curr = path.last().unwrap();
-            match curr.parent {
-                Some(point) => path.push(self.board[point.index(w)]),
-                None => break
-            }
-        }
-        path.reverse();
-        path
-    }
 
+        paths
+    }
     pub fn connected_component(&self, source: Point) -> Vec<Node> {
         let mut cc = Vec::new();
         let mut queue = VecDeque::new();
@@ -132,17 +136,44 @@ impl Graph {
     pub fn is_safe(&self, path: &Vec<Node>, len: usize) -> bool {
         let source = path.last().unwrap().point;
         let cc = self.connected_component(source);
+        let result;
 
         if len < cc.len() {
-            return true
+            result = true;
+        } 
+        else if cc.iter().any(|node| node.has_tail){
+            result = true;
         }
-        
-        for node in cc {
-            if node.has_tail {
-                return true
-            }
+        else {
+            result = false;
         }
 
-        return false
+        result
     }
 }
+
+pub struct Vertex<'a>{
+    node: &'a Node,
+    cost: i32,
+    parent: Option<Node>,
+}
+
+impl<'a> Ord for Vertex<'a> {
+    fn cmp(&self, other: &Self) -> Ordering {
+            other.cost.cmp(&self.cost)
+        }
+}
+
+impl<'a> PartialOrd for Vertex<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<'a> PartialEq for Vertex<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.cost == other.cost
+    }
+}
+
+impl<'a> Eq for Vertex<'a> {}

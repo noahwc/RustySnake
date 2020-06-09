@@ -1,5 +1,5 @@
 use super::rocket;
-use crate::{responses, logic, requests};
+use crate::{logic, requests, responses};
 use rocket::http::{ContentType, Status};
 use rocket::local::Client;
 use std::fs::File;
@@ -15,21 +15,18 @@ fn get_move() {
     let turn_data = turns[turn];
     let result: serde_json::Result<requests::Turn> = serde_json::from_str(turn_data);
     match result {
-        Err(e) => { 
+        Err(e) => {
             println!("failed to parse turn_data: {}", e);
             assert!(false)
-        },
-        Ok(t) => {
-            match logic::get_move(t) {
-                Some(m) => { 
-                    println!("{:?}",m);
-                    assert!(true)
-                },
-                None => assert!(false),
-            }
         }
+        Ok(t) => match logic::get_move(t) {
+            Some(m) => {
+                println!("{:?}", m);
+                assert!(true)
+            }
+            None => assert!(false),
+        },
     }
-
 }
 
 #[test]
@@ -42,9 +39,7 @@ fn ping() {
 #[test]
 fn start() {
     let client = Client::new(rocket()).expect("Failed to create client instance");
-    let mut response = client
-        .post("/start")
-        .dispatch();
+    let mut response = client.post("/start").dispatch();
     assert_eq!(response.status(), Status::Ok);
     // test the response to match the regex
     let _start: responses::Start = serde_json::from_str(&response.body_string().unwrap()).unwrap();
@@ -59,7 +54,7 @@ fn movement() {
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");
     let turns: Vec<&str> = buffer.lines().collect();
-    let turn_data = turns[turn-1];
+    let turn_data = turns[turn - 1];
 
     let client = Client::new(rocket()).expect("Failed to create client instance");
     let mut response = client
@@ -83,8 +78,8 @@ fn end() {
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("failed to read file");
     let turns: Vec<&str> = buffer.lines().collect();
-    let turn_data = turns[turn-2];
-    
+    let turn_data = turns[turn - 2];
+
     let client = Client::new(rocket()).expect("Failed to create client instance");
     let response = client
         .post("/end")

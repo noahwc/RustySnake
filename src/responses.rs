@@ -146,5 +146,4 @@ mod test {
         };
         assert_eq!(correct_move, deserialized_move);
     }
-
 }

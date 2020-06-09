@@ -1,15 +1,15 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
 // Modules
+mod game;
+mod graph;
+mod logging;
+mod logic;
+mod node;
 #[allow(dead_code)]
 mod requests;
 #[allow(dead_code)]
 mod responses;
-mod game;
-mod logic;
-mod node;
-mod graph;
-mod logging;
 #[cfg(test)]
 mod test;
 
@@ -41,7 +41,7 @@ fn movement(req: Json<requests::Turn>) -> Json<responses::Move> {
     logging::log(&req);
     match logic::get_move(req.into_inner()) {
         Some(m) => return Json(m),
-        None => return Json(responses::Move::new(responses::Direction::Right))
+        None => return Json(responses::Move::new(responses::Direction::Right)),
     }
 }
 

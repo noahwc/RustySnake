@@ -12,6 +12,7 @@ mod requests;
 mod responses;
 #[cfg(test)]
 mod test;
+mod vertex;
 
 // External crates
 #[macro_use]

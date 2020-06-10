@@ -1,0 +1,7 @@
+comment_width = 60
+indent_style = "Block"
+reorder_impl_items = true
+spaces_around_ranges = true
+use_field_init_shorthand = true
+where_single_line = true
+wrap_comments = true

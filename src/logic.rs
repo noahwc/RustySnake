@@ -2,18 +2,17 @@ use crate::{graph, node, requests, responses};
 
 pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
     let mut graph = graph::Graph::new(&turn);
-    let mut paths = Vec::new();
-    // refactor into board constructor?
-    graph.board[turn.you.body.first().unwrap().index(graph.width)].has_head = true;
-    graph.board[turn.you.body.last().unwrap().index(graph.width)].has_tail = true;
+    // refactor into board constructor? 
+    graph.board[graph::index(graph.width, turn.you.body.first().unwrap())].has_head = true;
+    graph.board[graph::index(graph.width, turn.you.body.last().unwrap())].has_tail = true;
 
     for snake in turn.board.snakes {
-        for point in snake.body {
-            graph.board[point.index(graph.width)].has_snake = true
+        for point in &snake.body {
+            graph.board[graph::index(graph.width, point)].has_snake = true
         }
     }
-    for point in turn.board.food {
-        graph.board[point.index(graph.width)].has_food = true
+    for point in &turn.board.food {
+        graph.board[graph::index(graph.width, point)].has_food = true
     }
 
     let empty_weight = 1;
@@ -34,10 +33,10 @@ pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
         (empty_weight, false)
     };
 
-    graph.weight_nodes(weighting_heuristic);
+    let targets = graph.weight_nodes(weighting_heuristic);
+    let mut paths = graph.djikstra(&graph.board[graph::index(graph.width, turn.you.body.first().unwrap())], &targets);
 
-    // run dijstra here
-    paths.sort_by(|a, b| cost(a).cmp(&cost(b)));
+    paths.sort_by(|a, b| weight(a).cmp(&weight(b)));
 
     for path in &paths {
         if graph.is_safe(path, turn.you.body.len()) {
@@ -63,7 +62,7 @@ fn get_direction(path: &Vec<node::Node>) -> responses::Direction {
     }
 }
 
-fn cost(v: &Vec<node::Node>) -> i32 {
+fn weight(v: &Vec<node::Node>) -> i32 {
     let mut sum: i32 = 0;
     v.iter().for_each(|n| sum += n.weight);
     sum

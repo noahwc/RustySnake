@@ -3,7 +3,7 @@ use crate::requests::{Point, Turn};
 #[derive(Debug, Copy, Clone, Default, Hash, Eq, PartialEq)]
 pub struct Node {
     pub point: Point,
-    pub weight: i32,
+    pub weight: usize,
     pub has_snake: bool,
     pub has_food: bool,
     pub has_head: bool,

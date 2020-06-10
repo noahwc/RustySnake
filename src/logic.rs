@@ -2,7 +2,6 @@ use crate::{graph, node, requests, responses};
 
 pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
     let mut graph = graph::Graph::new(&turn);
-    // refactor into board constructor? 
     graph.board[graph::index(graph.width, turn.you.body.first().unwrap())].has_head = true;
     graph.board[graph::index(graph.width, turn.you.body.last().unwrap())].has_tail = true;
 
@@ -19,7 +18,7 @@ pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
     let snake_weight = 122;
     let head_weight = 0;
 
-    let weighting_heuristic = |n: node::Node| -> (i32, bool) {
+    let weighting_heuristic = |n: node::Node| -> (usize, bool) {
         if n.has_snake {
             if n.has_head {
                 return (head_weight, false);
@@ -34,7 +33,15 @@ pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
     };
 
     let targets = graph.weight_nodes(weighting_heuristic);
-    let mut paths = graph.djikstra(&graph.board[graph::index(graph.width, turn.you.body.first().unwrap())], &targets);
+    let mut paths = Vec::new();
+
+    let source = graph.board[ graph::index(graph.width, turn.you.body.first().unwrap()) ];
+    for target in targets {
+        match graph.bfs(source, target) {
+            Some(path) => paths.push(path),
+            None => ()
+        }
+    }
 
     paths.sort_by(|a, b| weight(a).cmp(&weight(b)));
 
@@ -62,8 +69,8 @@ fn get_direction(path: &Vec<node::Node>) -> responses::Direction {
     }
 }
 
-fn weight(v: &Vec<node::Node>) -> i32 {
-    let mut sum: i32 = 0;
+fn weight(v: &Vec<node::Node>) -> usize {
+    let mut sum: usize = 0;
     v.iter().for_each(|n| sum += n.weight);
     sum
 }

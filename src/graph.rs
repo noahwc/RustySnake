@@ -1,6 +1,5 @@
 use super::node::*;
 use super::requests::*;
-use super::vertex::*;
 use std::collections::*;
 
 pub struct Graph {
@@ -30,7 +29,7 @@ impl Graph {
     }
 
     pub fn weight_nodes<F>(&mut self, heuristic: F) -> Vec<Node>
-    where F: Fn(Node) -> (i32, bool) {
+    where F: Fn(Node) -> (usize, bool) {
         let mut targets = Vec::new();
         for n in &mut self.board {
             let (weight, target) = heuristic(*n);
@@ -42,76 +41,69 @@ impl Graph {
         targets
     }
 
-    pub fn neighbours(&self, source: &Node) -> Vec<Node> {
+    pub fn neighbours(&self, source: &Node) -> Vec<Point> {
         let x = source.point.x;
         let y = source.point.y;
         let mut adj = Vec::new();
 
         if x > 0 {
-            adj.push(self.board[index(self.width, &Point { x: x - 1, y })])
+            adj.push(Point { x: x - 1, y })
         }
         if x < 10 {
-            adj.push(self.board[index(self.width, &Point { x: x + 1, y })])
+            adj.push(Point { x: x + 1, y })
         }
         if y > 0 {
-            adj.push(self.board[index(self.width, &Point { x, y: y - 1 })])
+            adj.push(Point { x, y: y - 1 })
         }
         if y < 10 {
-            adj.push(self.board[index(self.width, &Point { x, y: y + 1 })])
+            adj.push(Point { x, y: y + 1 })
         }
 
         adj
     }
 
-    pub fn djikstra(&self, source: &Node, targets: &Vec<Node>) -> Vec<Vec<Node>> {
-        let mut map = HashMap::new();
-        for n in &self.board {
-            map.insert(
-                n,
-                Vertex {
-                    node: n,
-                    cost: 9999,
-                    parent: None,
-                    visited: false,
-                },
-            );
-        }
-        map.get_mut(source).unwrap().cost = 0;
+    pub fn bfs(&self, source: Node, target: Node) -> Option< Vec<Node> > {
+        let mut q = VecDeque::new();
+        q.push_back(source);
 
-        let mut pq = BinaryHeap::new();
-        pq.push(*map.get(source).unwrap());
+        let mut visited: Vec<bool> = self.board
+            .iter()
+            .map(|_| false)
+            .collect();
 
-        while !pq.is_empty() {
-            let curr_vertex = pq.pop().unwrap();
-            map.get_mut(&curr_vertex.node).unwrap().visited = true;
+        visited[ index( self.width, &source.point) ] = true;
 
-            for node in &self.neighbours(&curr_vertex.node) {
-                let nb_vertex = map.get_mut(node).unwrap();
-                if !nb_vertex.visited {
-                    if nb_vertex.cost > curr_vertex.cost + curr_vertex.node.weight {
-                        nb_vertex.cost = curr_vertex.cost + curr_vertex.node.weight;
-                        nb_vertex.parent = Some(*curr_vertex.node);
-                        pq.push(*nb_vertex);
-                    }
+        let mut parent: Vec< Option<Node> > = self.board
+            .iter()
+            .map(|_| None)
+            .collect();
+
+        while let Some(curr) = q.pop_front() {
+            if curr == target { break; }
+
+            for point in &self.neighbours(&curr) {
+                let i = index(self.width, point);
+                let next = self.board[i];
+
+                if !visited[i] && !next.has_snake {
+                    q.push_back(next);
+                    visited[i] = true;
+                    parent[i] = Some(curr);
                 }
             }
         }
 
-        let mut paths = Vec::new();
-        for &target in targets {
-            let mut path = vec![target];
-            loop {
-                let curr_vertex = map.get(path.last().unwrap()).unwrap();
-                match curr_vertex.parent {
-                    Some(node) => path.push(node),
-                    None => break,
-                }
-            }
-            path.reverse();
-            paths.push(path);
+        let mut path = Vec::new();
+        let prev = target;
+
+        while let Some(prev) = parent[ index(self.width, &prev.point) ] {
+            path.push(prev);
         }
 
-        paths
+        path.reverse();
+
+        if path[0] == source { return Some(path); }
+        else {return None}
     }
 
     pub fn connected_component(&self, &source: &Node) -> Vec<Node> {
@@ -127,7 +119,8 @@ impl Graph {
                 None => {
                     if !curr.has_snake || curr.has_tail {
                         cc.push(curr);
-                        for node in self.neighbours(&curr) {
+                        for point in &self.neighbours(&curr) {
+                            let node = self.board[ index( self.width, point )];
                             queue.push_back(node)
                         }
                     }

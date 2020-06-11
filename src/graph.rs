@@ -66,17 +66,13 @@ impl Graph {
         let mut q = VecDeque::new();
         q.push_back(source);
 
-        let mut visited: Vec<bool> = self.board
-            .iter()
-            .map(|_| false)
-            .collect();
+        let mut visited: Vec<bool> = Vec::new();
+        let mut parent: Vec< Option<Node> > = Vec::new();
 
-        visited[ index(self.width, &source.point) ] = true;
-
-        let mut parent: Vec< Option<Node> > = self.board
-            .iter()
-            .map(|_| None)
-            .collect();
+        for _ in &self.board {
+            visited.push(false);
+            parent.push(None);
+        }
 
         while let Some(curr) = q.pop_front() {
             if curr == target { break; }
@@ -92,7 +88,7 @@ impl Graph {
                 }
             }
         }
-        
+
         let mut prev = target;
         let mut path = vec![target];
         

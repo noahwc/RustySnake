@@ -71,7 +71,7 @@ impl Graph {
             .map(|_| false)
             .collect();
 
-        visited[ index( self.width, &source.point) ] = true;
+        visited[ index(self.width, &source.point) ] = true;
 
         let mut parent: Vec< Option<Node> > = self.board
             .iter()
@@ -92,18 +92,25 @@ impl Graph {
                 }
             }
         }
-
-        let mut path = Vec::new();
-        let prev = target;
-
-        while let Some(prev) = parent[ index(self.width, &prev.point) ] {
-            path.push(prev);
+        
+        let mut prev = target;
+        let mut path = vec![target];
+        
+        loop {
+            let i = index( self.width, &prev.point );
+            match parent[i] {
+                Some(node) => {
+                    prev = node;
+                    path.push(prev);
+                },
+                None => break,
+            }
         }
 
         path.reverse();
 
-        if path[0] == source { return Some(path); }
-        else {return None}
+        if path[0] == source { Some(path) }
+        else { None }
     }
 
     pub fn connected_component(&self, &source: &Node) -> Vec<Node> {

@@ -2,6 +2,7 @@ use crate::{graph, node, requests, responses};
 
 pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
     let mut graph = graph::Graph::new(&turn);
+
     graph.board[graph::index(graph.width, turn.you.body.first().unwrap())].has_head = true;
     graph.board[graph::index(graph.width, turn.you.body.last().unwrap())].has_tail = true;
 
@@ -10,6 +11,7 @@ pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
             graph.board[graph::index(graph.width, point)].has_snake = true
         }
     }
+    
     for point in &turn.board.food {
         graph.board[graph::index(graph.width, point)].has_food = true
     }
@@ -42,7 +44,7 @@ pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
             None => ()
         }
     }
-
+    
     paths.sort_by(|a, b| weight(a).cmp(&weight(b)));
 
     for path in &paths {

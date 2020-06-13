@@ -41,9 +41,9 @@ impl Graph {
         targets
     }
 
-    pub fn neighbours(&self, source: &Node) -> Vec<Point> {
-        let x = source.point.x;
-        let y = source.point.y;
+    pub fn neighbours(&self, source: Point) -> Vec<Point> {
+        let x = source.x;
+        let y = source.y;
         let mut adj = Vec::new();
 
         if x > 0 {
@@ -77,7 +77,7 @@ impl Graph {
         while let Some(curr) = q.pop_front() {
             if curr == target { break; }
 
-            for point in &self.neighbours(&curr) {
+            for point in &self.neighbours(curr.point) {
                 let i = index(self.width, point);
                 let next = self.board[i];
 
@@ -109,30 +109,38 @@ impl Graph {
         else { None }
     }
 
-    pub fn connected_component(&self, &source: &Node) -> Vec<Node> {
-        let mut cc = Vec::new();
-        let mut queue = VecDeque::new();
-        let mut visited = HashSet::<Node>::with_capacity(self.height * self.width);
-        queue.push_back(source);
+    pub fn connected_component(&self, source: &Node) -> Vec<Node> {
+        let mut visited = HashMap::<&Node, bool>::with_capacity(self.height * self.width);
+        for node in &self.board {
+            visited.insert(node, false);
+        }
+        
+        let mut q = VecDeque::new();
+        q.push_back(*source);
 
-        while !queue.is_empty() {
-            let curr = queue.pop_front().unwrap();
+        let mut cc = Vec::new();
+
+        while let Some(curr) = q.pop_front() {
             match visited.get(&curr) {
-                Some(_p) => continue,
-                None => {
-                    if !curr.has_snake || curr.has_tail {
+                Some(true) => continue,
+                _ => {
+                    if !curr.has_snake || curr.has_tail || curr.has_head {
                         cc.push(curr);
-                        for point in &self.neighbours(&curr) {
-                            let node = self.board[ index( self.width, point )];
-                            queue.push_back(node)
+                        
+                        for point in &self.neighbours(curr.point) {
+                            let node = self.board[ index(self.width, point) ];
+                            q.push_back(node)
                         }
                     }
-                    visited.insert(curr);
+
+                    if let Some(v) = visited.get_mut(&curr) {
+                        *v = true;
+                    }
                 }
             }
         }
 
-        return cc;
+        cc
     }
 
     pub fn is_safe(&self, path: &Vec<Node>, len: usize) -> bool {
@@ -149,6 +157,90 @@ impl Graph {
         }
 
         result
+    }
+
+    pub fn wait(&self, source: &Node, body: &Vec<Point>) -> Option< Vec<Node> > {
+        let cc = self.connected_component(source);
+        let mut target = *source;
+
+        let mut break_outer = false;
+        for &point in body.iter().rev() {
+            for nb in &self.neighbours(point) {
+                let node = self.board[ index(self.width, nb) ];
+                
+                if cc.contains(&node) {
+                    target = node;
+                    break_outer = true;
+                }
+            }
+            if break_outer { break }
+        }
+
+        let mut paths = Vec::new();
+        for point in &self.neighbours(source.point) {
+            let nb_node = self.board[ index(self.width, point) ];
+            
+            if cc.contains(&nb_node) {
+                paths.push(self.cc_bfs(&cc, nb_node, target))
+            }
+        }
+
+        paths.sort_by(|a, b| b.len().cmp(&a.len()));
+
+        if paths.is_empty() { None }
+        else { Some(paths.remove(0)) }
+    }
+
+    fn cc_bfs(&self, cc: &Vec<Node>, source: Node, target: Node) -> Vec<Node> {        
+        let mut visited = HashMap::<Node, bool>::with_capacity(cc.len());
+        let mut parent = HashMap::<Node, Option<Node>>::with_capacity(cc.len());
+        for &node in cc {
+            visited.insert(node, false);
+            parent.insert(node, None);
+        }
+
+        let mut q = VecDeque::new();
+        q.push_back(source);
+
+        while let Some(curr) = q.pop_front() {
+            if curr == target { break }
+
+            for nb in &self.neighbours(curr.point) {
+                let next = self.board[ index(self.width, nb) ];
+                
+                let v = visited.get_mut(&next); 
+                match v {
+                    Some(false) => {
+                        if cc.contains(&next) {
+                            q.push_back(next);
+                
+                            *v.unwrap() = true;
+                            
+                            if let Some(p) = parent.get_mut(&next) {
+                                *p = Some(curr);
+                            }
+                        }
+                    },
+                    _ => continue
+                }
+            }
+        }
+
+        let mut path = vec![target];
+        let mut curr = &target;
+        
+        loop {
+            if let Some(prev) = parent.get(curr).unwrap() {
+                path.push(*prev);
+                curr = prev;
+                println!("CURR: {:#?}", curr);
+            }
+            else { break }
+        }
+
+        path.reverse();
+        if path[0] == source { path }
+        else { Vec::new() }
     }
 }
 

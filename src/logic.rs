@@ -37,9 +37,10 @@ pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
     let targets = graph.weight_nodes(weighting_heuristic);
     let mut paths = Vec::new();
 
-    let source = graph.board[ graph::index(graph.width, turn.you.body.first().unwrap()) ];
+    let head = graph.board[ graph::index(graph.width, turn.you.body.first().unwrap()) ];
+
     for target in targets {
-        match graph.bfs(source, target) {
+        match graph.bfs(head, target) {
             Some(path) => paths.push(path),
             None => ()
         }
@@ -52,7 +53,11 @@ pub fn get_move(turn: requests::Turn) -> Option<responses::Move> {
             return Some(responses::Move::new(get_direction(path)));
         }
     }
-    return None;
+    
+    match graph.wait(&head, &turn.you.body) {
+        Some(path) => Some(responses::Move::new(get_direction(&path))),
+        None => None
+    }
 }
 
 fn get_direction(path: &Vec<node::Node>) -> responses::Direction {
